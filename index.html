@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Protein AR Viewer - Table of Contents</title>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; }
+        h1 { text-align: center; }
+        .model-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+        .model-card { width: 250px; text-align: center; border: 1px solid #ccc; border-radius: 8px; padding: 10px; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        model-viewer { width: 100%; height: 200px; }
+        a { text-decoration: none; color: #007bff; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <h1>Protein AR Viewer - Table of Contents</h1>
+    <div class="model-grid">
+
+        <!-- Example Card for Model 1 -->
+        <div class="model-card">
+            <model-viewer src="models/5FYJ-5TE4.glb"
+                          alt="Model 1"
+                          camera-controls
+                          auto-rotate
+                          ar="false">
+            </model-viewer>
+            <h3>Model 1</h3>
+            <a href="pages/model1.html">View in Fullscreen & AR</a>
+        </div>
+
+        <!-- Example Card for Model 2 -->
+        <div class="model-card">
+            <model-viewer src="models/4MBS.glb"
+                          alt="Model 2"
+                          camera-controls
+                          auto-rotate
+                          ar="false">
+            </model-viewer>
+            <h3>Model 2</h3>
+            <a href="pages/model2.html">View in Fullscreen & AR</a>
+        </div>
+
+       <!-- Example Card for Model 3 -->
+        <div class="model-card">
+            <model-viewer src="models/4MBS_MRV.glb"
+                          alt="Model 2"
+                          camera-controls
+                          auto-rotate
+                          ar="false">
+            </model-viewer>
+            <h3>Model 3</h3>
+            <a href="pages/model3.html">View in Fullscreen & AR</a>
+        </div>
+
+      <!-- Example Card for Model 4 -->
+        <div class="model-card">
+            <model-viewer src="models/4INS.glb"
+                          alt="Model 4"
+                          camera-controls
+                          auto-rotate
+                          ar="false">
+            </model-viewer>
+            <h3>Model 4</h3>
+            <a href="pages/model4.html">View in Fullscreen & AR</a>
+        </div>
+
+    </div>
+
+</body>
+</html>
