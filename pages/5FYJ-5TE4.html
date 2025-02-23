@@ -1,0 +1,29 @@
+<!-- 5FYJ-5TE4.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>5FYJ-5TE4 - AR Viewer</title>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f0f0; }
+        model-viewer { width: 80%; height: 600px; }
+    </style>
+</head>
+<body>
+
+    <model-viewer src="../models/5FYJ-5TE4.glb"
+                  ios-src="../models/5FYJ-5TE4.usdz"
+                  alt="5FYJ-5TE4"
+                  ar
+                  ar-modes="scene-viewer quick-look webxr"
+                  ar-placement="floor"
+                  reveal="interaction"
+                  disable-tap
+                  camera-controls
+                  auto-rotate
+                  shadow-intensity="1">
+    </model-viewer>
+
+</body>
+</html>
