@@ -12,19 +12,20 @@
 </head>
 <body>
 
-    <model-viewer src="/protein-ar-viewer/models/5FYJ-5TE4.glb"
-                  ios-src="/protein-ar-viewer/models/5FYJ-5TE4.usdz"
-                  alt="5FYJ-5TE4 Protein Model"
-                  ar
-                  ar-modes="scene-viewer quick-look webxr"
-                  ar-placement="floor"
-                  reveal="interaction"
-                  disable-tap
-                  camera-controls
-                  auto-rotate
-                  shadow-intensity="1"
-                  ar-status="not-supported">
-    </model-viewer>
+   <model-viewer src="/protein-ar-viewer/models/5FYJ-5TE4.glb"
+              ios-src="/protein-ar-viewer/models/5FYJ-5TE4.usdz"
+              alt="5FYJ-5TE4 Protein Model"
+              ar
+              ar-modes="scene-viewer quick-look webxr"
+              ar-placement="floor"
+              reveal="interaction"
+              disable-tap
+              camera-controls
+              auto-rotate
+              shadow-intensity="1">
+    <div slot="poster">⚠️ Model failed to load.</div>
+</model-viewer>
+
 
 </body>
 </html>
