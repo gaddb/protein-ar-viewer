@@ -7,20 +7,32 @@
 </head>
 <body>
 
-    <model-viewer src="/protein-ar-viewer/models/5FYJ-5TE4.glb"
+   <model-viewer src="/protein-ar-viewer/models/5FYJ-5TE4.glb"
               ios-src="/protein-ar-viewer/models/5FYJ-5TE4.usdz"
               alt="5FYJ-5TE4 Protein Model"
               type="model/gltf-binary"
               ar
               ar-modes="scene-viewer quick-look webxr"
               ar-placement="floor"
-              reveal="interaction"
               camera-controls
               auto-rotate
               shadow-intensity="1"
               style="width: 100%; height: 600px;">
     <div slot="poster">⚠️ Model failed to load.</div>
 </model-viewer>
+
+<script>
+    const viewer = document.querySelector('model-viewer');
+    
+    viewer.addEventListener('load', () => {
+        console.log('Model loaded successfully.');
+    });
+
+    viewer.addEventListener('error', (e) => {
+        console.error('Model failed to load:', e);
+    });
+</script>
+
 
 
 </body>
