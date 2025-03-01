@@ -22,8 +22,23 @@
         const viewer = document.getElementById('ar-viewer');
         viewer.src = `models/${glb}`;
         viewer.setAttribute('ios-src', `models/${usdz}`);
+
         console.log('GLB file:', viewer.src);
         console.log('USDZ file:', viewer.getAttribute('ios-src'));
+
+        viewer.addEventListener('load', () => {
+            console.log('Model loaded, forcing AR test...');
+            if (viewer.canActivateAR) {
+                console.log('AR should be available!');
+            } else {
+                console.warn('AR is not available — model-viewer thinks this device can’t do AR.');
+            }
+        });
+
+        viewer.activateAR = function() {
+            console.log('Forcing AR activation!');
+            viewer.dispatchEvent(new Event('ar-status'));
+        };
     </script>
 </body>
 </html>
