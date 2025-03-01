@@ -17,6 +17,9 @@
         const viewer = document.getElementById('ar-viewer');
         viewer.src = `models/${glb}`;
         viewer.setAttribute('ios-src', `models/${usdz}`);
+        console.log('GLB file:', viewer.src);
+console.log('USDZ file:', viewer.getAttribute('ios-src'));
+
     </script>
 </body>
 </html>
