@@ -1,44 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>AR Model Viewer</title>
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-    <style>
-        body { margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; background: #f0f0f0; }
-        model-viewer { width: 100%; height: 100%; }
-    </style>
-</head>
-<body>
-    <model-viewer id="ar-viewer"
-        ar
-        ar-modes="webxr scene-viewer quick-look"
-        camera-controls
-        mime-type="model/gltf-binary">
-    </model-viewer>
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const glb = params.get('glb');
-        const usdz = params.get('usdz');
-        const viewer = document.getElementById('ar-viewer');
-        viewer.src = `models/${glb}`;
-        viewer.setAttribute('ios-src', `models/${usdz}`);
-
-        console.log('GLB file:', viewer.src);
-        console.log('USDZ file:', viewer.getAttribute('ios-src'));
-
-        viewer.addEventListener('load', () => {
-            console.log('Model loaded, forcing AR test...');
-            if (viewer.canActivateAR) {
-                console.log('AR should be available!');
-            } else {
-                console.warn('AR is not available — model-viewer thinks this device can’t do AR.');
-            }
-        });
-
-        viewer.activateAR = function() {
-            console.log('Forcing AR activation!');
-            viewer.dispatchEvent(new Event('ar-status'));
-        };
-    </script>
-</body>
-</html>
+<model-viewer id="ar-viewer"
+    ar
+    ar-modes="webxr scene-viewer quick-look"
+    camera-controls
+    mime-type="model/gltf-binary"
+    src="models/4INS-20250301T203144601Z-5172a0c7.glb"
+    ios-src="models/4INS-20250301T203144601Z-5172a0c7.usdz">
+</model-viewer>
