@@ -40,6 +40,7 @@
         mime-type="model/gltf-binary">
     </model-viewer>
 
+    <!-- Fallback button for iOS Chrome/Firefox -->
     <a id="ios-ar-link" href="#" rel="ar">View in AR</a>
 
     <script>
@@ -55,15 +56,23 @@
             iosLink.href = `models/${usdz}`;
 
             setTimeout(() => {
-                console.log("Forcing AR launch...");
+                console.log("Handling AR launch...");
+
                 if (isIOS()) {
                     if (isSafari()) {
-                        viewer.activateAR();  // Native Quick Look for Safari
+                        viewer.activateAR();  // ✅ Direct Quick Look for Safari
                     } else {
-                        iosLink.style.display = 'block';  // Manual fallback for iOS Chrome
+                        iosLink.style.display = 'block';  // ✅ Manual fallback for iOS Chrome
+                    }
+                } else if (isAndroid()) {
+                    // ✅ Only trigger activateAR if Android and AR is supported
+                    if (viewer.canActivateAR) {
+                        viewer.activateAR();
+                    } else {
+                        console.warn('AR not supported on this Android device/browser');
                     }
                 } else {
-                    viewer.activateAR();  // Force Scene Viewer on Android
+                    console.log('Neither iOS nor Android detected - showing normal 3D model only.');
                 }
             }, 1000);
         } else {
@@ -76,6 +85,10 @@
 
         function isSafari() {
             return /^((?!chrome|android).)*safari/i.test(navigator.userAgent) && !navigator.userAgent.includes('CriOS');
+        }
+
+        function isAndroid() {
+            return /Android/.test(navigator.userAgent);
         }
     </script>
 </body>
