@@ -28,27 +28,26 @@
     </model-viewer>
     <script>
         const params = new URLSearchParams(window.location.search);
-const glb = params.get('glb');
-const usdz = params.get('usdz');
-const viewer = document.getElementById('ar-viewer');
+        const glb = params.get('glb');
+        const usdz = params.get('usdz');
+        const viewer = document.getElementById('ar-viewer');
 
-if (glb && usdz) {
-    viewer.src = `models/${glb}`;
-    viewer.setAttribute('ios-src', `models/${usdz}`);
+        if (glb && usdz) {
+            viewer.src = `models/${glb}`;
+            viewer.setAttribute('ios-src', `models/${usdz}`);
 
-    // ✅ Force a small delay to let model-viewer recognize AR mode
-    setTimeout(() => {
-        console.log("Finalized AR model loading...");
-        console.log('GLB file:', viewer.src);
-        console.log('USDZ file:', viewer.getAttribute('ios-src'));
-        viewer.removeAttribute('ar'); // Remove & re-add to trigger detection
-        viewer.setAttribute('ar', '');
-    }, 500);
-}
+            console.log('GLB file:', viewer.src);
+            console.log('USDZ file:', viewer.getAttribute('ios-src'));
 
-
-        console.log('GLB file:', viewer.src);
-        console.log('USDZ file:', viewer.getAttribute('ios-src'));
+            setTimeout(() => {
+                console.log("Finalized AR model loading... forcing AR now.");
+                viewer.removeAttribute('ar'); // Refresh AR detection
+                viewer.setAttribute('ar', '');
+                viewer.activateAR(); // 🚀 Force AR immediately
+            }, 1000); // Give it 1 second to fully load first
+        } else {
+            console.error('Missing glb or usdz parameters!');
+        }
     </script>
 </body>
 </html>
