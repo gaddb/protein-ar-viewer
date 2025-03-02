@@ -42,7 +42,7 @@
         ios-src="models/4INS.usdz">
     </model-viewer>
 
-    <!-- Manual iOS fallback button (only shown for Chrome/Firefox on iOS) -->
+    <!-- Manual iOS Chrome fallback button (direct USDZ link) -->
     <a id="ios-ar-link" href="models/4INS.usdz" rel="ar">View in AR</a>
 
     <script>
@@ -51,11 +51,15 @@
         }
 
         function isSafari() {
-            return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            return /^((?!chrome|android).)*safari/i.test(navigator.userAgent) && !navigator.userAgent.includes('CriOS');
         }
 
-        // Show manual AR link ONLY for iOS Chrome/Firefox (not Safari)
-        if (isIOS() && !isSafari()) {
+        function isChromeOnIOS() {
+            return /CriOS/.test(navigator.userAgent);
+        }
+
+        // Show manual AR link ONLY for Chrome on iOS
+        if (isChromeOnIOS()) {
             document.getElementById('ios-ar-link').style.display = 'block';
         }
     </script>
