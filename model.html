@@ -11,22 +11,47 @@
             justify-content: center;
             height: 100vh;
             background: #f0f0f0;
-            overflow: hidden; /* Prevent scroll */
+            overflow: hidden;
         }
         model-viewer {
             width: 100%;
             height: 100%;
+        }
+        #ios-ar-link {
+            display: none;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
     <model-viewer id="ar-viewer"
         ar
-        ar-modes="webxr scene-viewer quick-look"
+        ar-modes="webxr scene-viewer"
         camera-controls
         mime-type="model/gltf-binary"
-        src="models/4INS.glb"     <!-- Use a file you KNOW worked before -->
-        ios-src="models/4INS.usdz">  <!-- Same, matching file for iOS -->
+        src="models/4INS.glb">
     </model-viewer>
+
+    <!-- iOS AR Link (only shown for iOS users) -->
+    <a id="ios-ar-link" href="models/4INS.usdz" rel="ar">View in AR</a>
+
+    <script>
+        // Detect iOS and show direct AR link if needed
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+
+        if (isIOS()) {
+            document.getElementById('ios-ar-link').style.display = 'block';
+        }
+    </script>
 </body>
 </html>
