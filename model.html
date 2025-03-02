@@ -28,28 +28,34 @@
             border-radius: 5px;
             text-decoration: none;
             font-size: 16px;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
     <model-viewer id="ar-viewer"
         ar
-        ar-modes="webxr scene-viewer"
+        ar-modes="webxr scene-viewer quick-look"
         camera-controls
         mime-type="model/gltf-binary"
-        src="models/4INS.glb">
+        src="models/4INS.glb"
+        ios-src="models/4INS.usdz">
     </model-viewer>
 
-    <!-- iOS AR Link (only shown for iOS users) -->
+    <!-- Manual iOS fallback button (only needed for Chrome) -->
     <a id="ios-ar-link" href="models/4INS.usdz" rel="ar">View in AR</a>
 
     <script>
-        // Detect iOS and show direct AR link if needed
         function isIOS() {
             return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         }
 
-        if (isIOS()) {
+        function isSafari() {
+            return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        }
+
+        // Show manual AR link ONLY for iOS Chrome/Firefox (not Safari)
+        if (isIOS() && !isSafari()) {
             document.getElementById('ios-ar-link').style.display = 'block';
         }
     </script>
