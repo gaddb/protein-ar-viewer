@@ -24,30 +24,9 @@
         ar
         ar-modes="webxr scene-viewer quick-look"
         camera-controls
-        mime-type="model/gltf-binary">
+        mime-type="model/gltf-binary"
+        src="models/4INS.glb"     <!-- Use a file you KNOW worked before -->
+        ios-src="models/4INS.usdz">  <!-- Same, matching file for iOS -->
     </model-viewer>
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const glb = params.get('glb');
-        const usdz = params.get('usdz');
-        const viewer = document.getElementById('ar-viewer');
-
-        if (glb && usdz) {
-            viewer.src = `models/${glb}`;
-            viewer.setAttribute('ios-src', `models/${usdz}`);
-
-            console.log('GLB file:', viewer.src);
-            console.log('USDZ file:', viewer.getAttribute('ios-src'));
-
-            setTimeout(() => {
-                console.log("Finalized AR model loading... forcing AR now.");
-                viewer.removeAttribute('ar'); // Refresh AR detection
-                viewer.setAttribute('ar', '');
-                viewer.activateAR(); // 🚀 Force AR immediately
-            }, 1000); // Give it 1 second to fully load first
-        } else {
-            console.error('Missing glb or usdz parameters!');
-        }
-    </script>
 </body>
 </html>
