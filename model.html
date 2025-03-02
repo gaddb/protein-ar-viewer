@@ -34,7 +34,7 @@
 </head>
 <body>
     <model-viewer id="ar-viewer"
-        ar  <!-- ✅ This was missing before! -->
+        ar
         ar-modes="webxr scene-viewer quick-look"
         camera-controls
         mime-type="model/gltf-binary"
@@ -42,7 +42,7 @@
         ios-src="models/4INS.usdz">
     </model-viewer>
 
-    <!-- Manual iOS fallback button (only shown for Chrome on iOS) -->
+    <!-- Manual iOS fallback button (only shown for Chrome/Firefox on iOS) -->
     <a id="ios-ar-link" href="models/4INS.usdz" rel="ar">View in AR</a>
 
     <script>
