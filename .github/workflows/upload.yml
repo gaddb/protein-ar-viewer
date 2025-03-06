@@ -1,0 +1,30 @@
+name: Upload Molstar Export
+
+on:
+  repository_dispatch:
+    types: [molstar_export]
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - name: Create models directory if missing
+        run: mkdir -p models
+
+      - name: Save files to models directory
+        run: |
+          echo "${{ github.event.client_payload.glbFile }}" | base64 -d > models/${{ github.event.client_payload.glbFilename }}
+          echo "${{ github.event.client_payload.usdzFile }}" | base64 -d > models/${{ github.event.client_payload.usdzFilename }}
+
+      - name: Commit and push to gh-pages
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "actions@github.com"
+          git add models
+          git commit -m "Add new exported model files"
+          git push origin gh-pages
