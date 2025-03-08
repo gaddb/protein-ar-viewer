@@ -15,11 +15,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Print Received Payload (Debugging)
+            - name: Print Received Payload (Debugging)
         run: |
           echo "Received PDB ID: ${{ github.event.client_payload.pdbId }}"
-          echo "Received GLB Data: ${#${{ github.event.client_payload.glb }}} characters"
-          echo "Received USDZ Data: ${#${{ github.event.client_payload.usdz }}} characters"
+          echo "Received GLB Data Length: $(echo -n "${{ github.event.client_payload.glb }}" | wc -c) characters"
+          echo "Received USDZ Data Length: $(echo -n "${{ github.event.client_payload.usdz }}" | wc -c) characters"
+
 
       - name: Convert Base64 to Files
         run: |
