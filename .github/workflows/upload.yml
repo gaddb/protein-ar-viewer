@@ -15,15 +15,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Convert Base64 to File
+      - name: Convert Base64 to Files
         run: |
           mkdir -p models
           echo "${{ github.event.client_payload.glb }}" | base64 --decode > models/${{ github.event.client_payload.pdbId }}.glb
+          echo "${{ github.event.client_payload.usdz }}" | base64 --decode > models/${{ github.event.client_payload.pdbId }}.usdz
 
       - name: Commit and Push
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add models/
-          git commit -m "Add model file ${{ github.event.client_payload.pdbId }}.glb"
+          git commit -m "Add model files ${{ github.event.client_payload.pdbId }}.glb and ${{ github.event.client_payload.pdbId }}.usdz"
           git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/gaddb/protein-ar-viewer.git main
