@@ -2,7 +2,7 @@ name: Upload AR Models
 
 on:
   repository_dispatch:
-    types: [upload_glb, upload_usdz]  # ✅ Now it listens for BOTH file types!
+    types: [upload_model]  # ✅ Updated to listen for the new event type
 
 jobs:
   upload:
@@ -15,13 +15,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Debug Payload  # ✅ Print incoming data to check if it's correct
+      - name: Print Received Payload (Debugging)
         run: |
-          echo "GLB Payload: ${{ github.event.client_payload.glb }}"
-          echo "USDZ Payload: ${{ github.event.client_payload.usdz }}"
-          echo "PDB ID: ${{ github.event.client_payload.pdbId }}"
+          echo "Received PDB ID: ${{ github.event.client_payload.pdbId }}"
+          echo "Received GLB Data: ${#${{ github.event.client_payload.glb }}} characters"
+          echo "Received USDZ Data: ${#${{ github.event.client_payload.usdz }}} characters"
 
-      - name: Convert Base64 to File
+      - name: Convert Base64 to Files
         run: |
           mkdir -p models
           echo "${{ github.event.client_payload.glb }}" | base64 --decode > models/${{ github.event.client_payload.pdbId }}.glb
