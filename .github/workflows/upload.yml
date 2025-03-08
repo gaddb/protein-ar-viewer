@@ -2,7 +2,7 @@ name: Upload AR Models
 
 on:
   repository_dispatch:
-    types: [upload_glb]
+    types: [upload_glb, upload_usdz]  # ✅ Now it listens for BOTH file types!
 
 jobs:
   upload:
@@ -15,20 +15,22 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Convert Base64 to Files
+      - name: Debug Payload  # ✅ Print incoming data to check if it's correct
+        run: |
+          echo "GLB Payload: ${{ github.event.client_payload.glb }}"
+          echo "USDZ Payload: ${{ github.event.client_payload.usdz }}"
+          echo "PDB ID: ${{ github.event.client_payload.pdbId }}"
+
+      - name: Convert Base64 to File
         run: |
           mkdir -p models
-          if [ -n "${{ github.event.client_payload.glb }}" ]; then
-            echo "${{ github.event.client_payload.glb }}" | base64 --decode > models/${{ github.event.client_payload.pdbId }}.glb
-          fi
-          if [ -n "${{ github.event.client_payload.usdz }}" ]; then
-            echo "${{ github.event.client_payload.usdz }}" | base64 --decode > models/${{ github.event.client_payload.pdbId }}.usdz
-          fi
+          echo "${{ github.event.client_payload.glb }}" | base64 --decode > models/${{ github.event.client_payload.pdbId }}.glb
+          echo "${{ github.event.client_payload.usdz }}" | base64 --decode > models/${{ github.event.client_payload.pdbId }}.usdz
 
       - name: Commit and Push
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add models/
-          git commit -m "Add model files ${{ github.event.client_payload.pdbId }}.glb and ${{ github.event.client_payload.pdbId }}.usdz"
+          git commit -m "Add model files for ${{ github.event.client_payload.pdbId }}"
           git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/gaddb/protein-ar-viewer.git main
