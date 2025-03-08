@@ -18,8 +18,12 @@ jobs:
       - name: Convert Base64 to Files
         run: |
           mkdir -p models
-          echo "${{ github.event.client_payload.glb }}" | base64 --decode > models/${{ github.event.client_payload.pdbId }}.glb
-          echo "${{ github.event.client_payload.usdz }}" | base64 --decode > models/${{ github.event.client_payload.pdbId }}.usdz
+          if [ -n "${{ github.event.client_payload.glb }}" ]; then
+            echo "${{ github.event.client_payload.glb }}" | base64 --decode > models/${{ github.event.client_payload.pdbId }}.glb
+          fi
+          if [ -n "${{ github.event.client_payload.usdz }}" ]; then
+            echo "${{ github.event.client_payload.usdz }}" | base64 --decode > models/${{ github.event.client_payload.pdbId }}.usdz
+          fi
 
       - name: Commit and Push
         run: |
