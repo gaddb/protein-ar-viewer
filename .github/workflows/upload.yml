@@ -15,18 +15,22 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-            - name: Print Received Payload (Debugging)
+      - name: Print Received Payload (Debugging)
         run: |
           echo "Received PDB ID: ${{ github.event.client_payload.pdbId }}"
           echo "Received GLB Data Length: $(echo -n "${{ github.event.client_payload.glb }}" | wc -c) characters"
           echo "Received USDZ Data Length: $(echo -n "${{ github.event.client_payload.usdz }}" | wc -c) characters"
-
 
       - name: Convert Base64 to Files
         run: |
           mkdir -p models
           echo "${{ github.event.client_payload.glb }}" | base64 --decode > models/${{ github.event.client_payload.pdbId }}.glb
           echo "${{ github.event.client_payload.usdz }}" | base64 --decode > models/${{ github.event.client_payload.pdbId }}.usdz
+
+      - name: Verify Files Before Commit
+        run: |
+          echo "Checking created files in models directory:"
+          ls -l models/
 
       - name: Commit and Push
         run: |
