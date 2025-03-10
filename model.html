@@ -55,8 +55,9 @@
             viewer.setAttribute('ios-src', `models/${usdz}`);
             iosLink.href = `models/${usdz}`;
 
-            setTimeout(() => {
-                console.log("Handling AR launch...");
+            // ✅ Wait until the model is fully loaded before attempting AR activation
+            viewer.addEventListener('load', () => {
+                console.log("✅ Model fully loaded, preparing to launch AR...");
 
                 if (isIOS()) {
                     if (isSafari()) {
@@ -65,18 +66,19 @@
                         iosLink.style.display = 'block';  // ✅ Manual fallback for iOS Chrome
                     }
                 } else if (isAndroid()) {
-                    // ✅ Only trigger activateAR if Android and AR is supported
+                    console.log("✅ Checking Android AR support...");
                     if (viewer.canActivateAR) {
-                        viewer.activateAR();
+                        console.log("🚀 Launching AR on Android...");
+                        setTimeout(() => viewer.activateAR(), 500);  // ✅ Small delay for stability
                     } else {
-                        console.warn('AR not supported on this Android device/browser');
+                        console.warn('⚠️ AR not supported on this Android device/browser');
                     }
                 } else {
-                    console.log('Neither iOS nor Android detected - showing normal 3D model only.');
+                    console.log('🔍 Neither iOS nor Android detected - showing normal 3D model only.');
                 }
-            }, 1000);
+            });
         } else {
-            console.error('Missing glb or usdz parameters!');
+            console.error('❌ Missing glb or usdz parameters!');
         }
 
         function isIOS() {
