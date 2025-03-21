@@ -4,6 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>View Model in AR</title>
+  <style>
+    body {
+      margin: 0;
+      background: #fff;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .ar-launch {
+      display: none;
+    }
+    .ios-message {
+      text-align: center;
+      font-size: 1.2em;
+    }
+  </style>
 </head>
 <body>
   <script>
@@ -14,14 +32,21 @@
     if (!model) {
       document.body.innerHTML = "<p>Error: No model name provided in the URL.</p>";
     } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
-      // iOS: show Quick Look AR viewer
+      // iOS: create an <a rel="ar"> and click it after interaction
       document.body.innerHTML = `
-        <h2>Tap the image below to view in AR (iOS)</h2>
-        <a rel="ar" href="models/${model}.usdz">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/AR_kit_icon.png/600px-AR_kit_icon.png" alt="View in AR" width="200" />
+        <div class="ios-message">
+          <p>Tap anywhere to view in AR</p>
+        </div>
+        <a id="ar-link" rel="ar" href="models/${model}.usdz" class="ar-launch">
+          <img src="models/${model}.usdz" alt="AR" />
         </a>
-        <p>If this doesn't work, try opening in Safari on your iPhone or iPad.</p>
       `;
+
+      // Add a tap handler to trigger the AR experience
+      document.body.addEventListener('click', () => {
+        const link = document.getElementById('ar-link');
+        if (link) link.click();
+      });
     } else {
       // Android or other: launch Scene Viewer
       const glbUrl = `https://gaddb.github.io/protein-ar-viewer/models/${model}.glb`;
