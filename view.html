@@ -5,42 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>View Model in AR</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
       margin: 0;
       background: #fff;
       font-family: sans-serif;
-      text-align: center;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       flex-direction: column;
-      position: relative;
+      text-align: center;
     }
-    #preview-container {
-      position: relative;
-      width: 90%;
-      max-width: 400px;
-    }
-    #preview-image {
-      width: 100%;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    }
+
     #overlay-text {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 1.4em;
-      background: rgba(0,0,0,0.5);
-      color: white;
-      padding: 0.5em 1em;
+      font-size: 1.5em;
+      color: #333;
+      background: rgba(0,0,0,0.05);
+      padding: 1em 2em;
       border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
+
     #spinner {
       display: none;
       margin-top: 20px;
@@ -63,10 +48,7 @@
   </style>
 </head>
 <body>
-  <div id="preview-container">
-    <img id="preview-image" src="images/ar-preview-placeholder.png" alt="AR Preview" />
-    <div id="overlay-text">Tap anywhere to start AR</div>
-  </div>
+  <div id="overlay-text">Tap anywhere to start AR</div>
   <div id="spinner">
     <div class="spinner"></div>
     <p>Loading AR experience...</p>
@@ -89,7 +71,7 @@
       document.getElementById('ar-link').querySelector('img').src = `models/${model}.usdz`;
 
       document.body.addEventListener('click', () => {
-        document.getElementById('preview-container').style.display = 'none';
+        document.getElementById('overlay-text').style.display = 'none';
         document.getElementById('spinner').style.display = 'block';
 
         const link = document.getElementById('ar-link');
