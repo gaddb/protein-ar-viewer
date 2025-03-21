@@ -4,39 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>View Model in AR</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 2em;
-    }
-    .ar-button img {
-      max-width: 200px;
-      margin-top: 20px;
-      border-radius: 12px;
-    }
-  </style>
 </head>
 <body>
   <script>
-    const model = new URLSearchParams(window.location.search).get('model');
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const params = new URLSearchParams(window.location.search);
+    const model = params.get('model');
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
 
     if (!model) {
-      document.body.innerHTML = "<p>Error: No model specified.</p>";
-    } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-      // iOS: display a visible <a rel="ar"> link with image fallback
-      document.write(`
-        <h2>Tap below to view in AR (iOS)</h2>
+      document.body.innerHTML = "<p>Error: No model name provided in the URL.</p>";
+    } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+      // iOS: show Quick Look AR viewer
+      document.body.innerHTML = `
+        <h2>Tap the image below to view in AR (iOS)</h2>
         <a rel="ar" href="models/${model}.usdz">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/AR_kit_icon.png/600px-AR_kit_icon.png" alt="Open in AR"/>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/AR_kit_icon.png/600px-AR_kit_icon.png" alt="View in AR" width="200" />
         </a>
-        <p>If nothing happens, make sure you're using Safari on an iPhone or iPad.</p>
-      `);
+        <p>If this doesn't work, try opening in Safari on your iPhone or iPad.</p>
+      `;
     } else {
-      // Android: launch Scene Viewer via intent
-      const glbUrl = \`https://gaddb.github.io/protein-ar-viewer/models/\${model}.glb\`;
-      const sceneViewerUrl = \`intent://arvr.google.com/scene-viewer/1.0?file=\${encodeURIComponent(glbUrl)}&mode=ar_preferred#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;S.browser_fallback_url=\${encodeURIComponent(glbUrl)};end;\`;
+      // Android or other: launch Scene Viewer
+      const glbUrl = `https://gaddb.github.io/protein-ar-viewer/models/${model}.glb`;
+      const fallbackUrl = glbUrl;
+      const sceneViewerUrl = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(glbUrl)}&mode=ar_preferred#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end;`;
+
       window.location.href = sceneViewerUrl;
     }
   </script>
