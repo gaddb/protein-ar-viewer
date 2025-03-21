@@ -5,25 +5,77 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>View Model in AR</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       background: #fff;
       font-family: sans-serif;
+      text-align: center;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      flex-direction: column;
+      position: relative;
     }
-    .ar-launch {
+    #preview-container {
+      position: relative;
+      width: 90%;
+      max-width: 400px;
+    }
+    #preview-image {
+      width: 100%;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    #overlay-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.4em;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      padding: 0.5em 1em;
+      border-radius: 12px;
+    }
+    #spinner {
       display: none;
+      margin-top: 20px;
     }
-    .ios-message {
-      text-align: center;
-      font-size: 1.2em;
+
+    .spinner {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #007aff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
+  <div id="preview-container">
+    <img id="preview-image" src="images/ar-preview-placeholder.png" alt="AR Preview" />
+    <div id="overlay-text">Tap anywhere to start AR</div>
+  </div>
+  <div id="spinner">
+    <div class="spinner"></div>
+    <p>Loading AR experience...</p>
+  </div>
+
+  <a id="ar-link" rel="ar" href="" style="display: none;">
+    <img src="" alt="AR Model"/>
+  </a>
+
   <script>
     const params = new URLSearchParams(window.location.search);
     const model = params.get('model');
@@ -32,27 +84,22 @@
     if (!model) {
       document.body.innerHTML = "<p>Error: No model name provided in the URL.</p>";
     } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
-      // iOS: create an <a rel="ar"> and click it after interaction
-      document.body.innerHTML = `
-        <div class="ios-message">
-          <p>Tap anywhere to view in AR</p>
-        </div>
-        <a id="ar-link" rel="ar" href="models/${model}.usdz" class="ar-launch">
-          <img src="models/${model}.usdz" alt="AR" />
-        </a>
-      `;
+      // iOS
+      document.getElementById('ar-link').href = `models/${model}.usdz`;
+      document.getElementById('ar-link').querySelector('img').src = `models/${model}.usdz`;
 
-      // Add a tap handler to trigger the AR experience
       document.body.addEventListener('click', () => {
+        document.getElementById('preview-container').style.display = 'none';
+        document.getElementById('spinner').style.display = 'block';
+
         const link = document.getElementById('ar-link');
         if (link) link.click();
       });
     } else {
-      // Android or other: launch Scene Viewer
+      // Android / other
       const glbUrl = `https://gaddb.github.io/protein-ar-viewer/models/${model}.glb`;
       const fallbackUrl = glbUrl;
       const sceneViewerUrl = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(glbUrl)}&mode=ar_preferred#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end;`;
-
       window.location.href = sceneViewerUrl;
     }
   </script>
