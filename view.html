@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Model in AR</title>
+    <script>
+        window.onload = function() {
+            var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            var modelName = new URLSearchParams(window.location.search).get('model');
+
+            if (!modelName) {
+                document.body.innerHTML = "<p>Error: No model specified.</p>";
+                return;
+            }
+
+            // Check if the device is an iPhone or iPad (iOS)
+            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                window.location.href = `models/${modelName}.usdz`;
+            } else {
+                // Assume Android or other device
+                window.location.href = `models/${modelName}.glb`;
+            }
+        };
+    </script>
+</head>
+<body>
+    <p>Loading model...</p>
+</body>
+</html>
