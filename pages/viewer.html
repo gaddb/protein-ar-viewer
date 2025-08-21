@@ -6,13 +6,20 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
-    html,body { height:100%; margin:0; background:#000; color:#fff; font-family:Arial, sans-serif; }
-    header { position:fixed; top:0; left:0; right:0; padding:10px 14px; background:rgba(0,0,0,.5); z-index:2; display:flex; align-items:center; gap:12px; }
+    html,body { height:100%; margin:0; background:#fff; color:#000; font-family:Arial, sans-serif; }
+    header {
+      position:fixed; top:0; left:0; right:0; padding:10px 14px;
+      background:rgba(255,255,255,.9); z-index:2; display:flex; align-items:center; gap:12px;
+      border-bottom:1px solid #e5e5e5;
+    }
     header h1 { font-size:16px; margin:0; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    header a { color:#8fd; text-decoration:none; }
-    model-viewer { width:100%; height:100%; }
-    .note { position:fixed; bottom:8px; left:8px; right:8px; z-index:2; font-size:12px; opacity:.8; }
-    .ar-btn { position:fixed; right:14px; bottom:14px; z-index:3; border:0; padding:10px 14px; border-radius:8px; background:#0a84ff; color:#fff; font-weight:600; }
+    header a { color:#0a66c2; text-decoration:none; }
+    model-viewer { width:100%; height:100%; background-color:#fff; }
+    .note { position:fixed; bottom:8px; left:8px; right:8px; z-index:2; font-size:12px; opacity:.85; color:#333; }
+    .ar-btn {
+      position:fixed; right:14px; bottom:14px; z-index:3;
+      border:0; padding:10px 14px; border-radius:8px; background:#0a84ff; color:#fff; font-weight:600;
+    }
   </style>
 </head>
 <body>
@@ -40,27 +47,29 @@
     // Parse query params: ?title=...&glb=...&usdz=...
     const p = new URLSearchParams(location.search);
     const title = p.get('title') || '';
-    const glb = p.get('glb');          // required
-    const usdz = p.get('usdz') || '';  // optional but needed for iOS AR
+    const glb = p.get('glb');
+    const usdz = p.get('usdz') || '';
 
-    // Set title
+    // Set title (optional)
     if (title) document.getElementById('title').textContent = title;
 
-    // Set sources
     const mv = document.getElementById('mv');
+    const noteEl = document.getElementById('note');
+
     if (!glb) {
-      document.getElementById('note').textContent = 'Missing ?glb= path in URL.';
+      noteEl.textContent = 'Missing ?glb= path in URL.';
     } else {
-      // Normalize relative paths: viewer.html lives in /pages/, so ../ points to repo root
-      mv.src = glb;
-      if (usdz) mv.setAttribute('ios-src', usdz);
+      mv.src = glb;                 // e.g., ../models/4INS.glb
+      if (usdz) mv.setAttribute('ios-src', usdz);  // e.g., ../models/4INS.usdz
     }
 
-    // Gentle guidance if on iOS and no USDZ
-    const noteEl = document.getElementById('note');
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    // Gentle guidance for iOS if no USDZ present
+    const isIOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
     if (isIOS && !usdz) {
-      noteEl.textContent = 'iOS AR requires a USDZ. Provide ?usdz=... in the link to enable “View in AR”.';
+      noteEl.textContent = 'iOS AR requires a USDZ. Add &usdz=../models/YourModel.usdz to enable “View in AR”.';
     }
   </script>
 </body>
