@@ -36,6 +36,9 @@
     ar
     ar-modes="webxr scene-viewer quick-look"
     quick-look-browsers="safari chrome"
+    ar-placement="floor"
+    ar-scale="fixed"
+    bounds="tight"
     exposure="1"
     shadow-intensity="0.2">
     <button slot="ar-button" class="ar-btn">View in AR</button>
@@ -50,7 +53,6 @@
     const glb = p.get('glb');
     const usdz = p.get('usdz') || '';
 
-    // Set title (optional)
     if (title) document.getElementById('title').textContent = title;
 
     const mv = document.getElementById('mv');
