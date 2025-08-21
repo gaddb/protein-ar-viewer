@@ -31,14 +31,24 @@
   <model-viewer id="mv"
     src=""
     ios-src=""
+
     camera-controls
     auto-rotate
+
+    <!-- AR behavior -->
     ar
     ar-modes="webxr scene-viewer quick-look"
     quick-look-browsers="safari chrome"
     ar-placement="floor"
-    ar-scale="fixed"
-    bounds="tight"
+    ar-scale="auto"          <!-- allow pinch scaling in AR -->
+
+    <!-- Framing / stability -->
+    bounds="tight"           <!-- use tight mesh bounds (helps reduce clipping) -->
+    camera-orbit="0deg 65deg 130%"  <!-- a pleasant default; user can zoom way in now -->
+    max-camera-orbit="auto auto 2500%"  <!-- generous upper zoom -->
+    min-field-of-view="15deg"
+    max-field-of-view="90deg"
+
     exposure="1"
     shadow-intensity="0.2">
     <button slot="ar-button" class="ar-btn">View in AR</button>
@@ -65,7 +75,7 @@
       if (usdz) mv.setAttribute('ios-src', usdz);  // e.g., ../models/4INS.usdz
     }
 
-    // Gentle guidance for iOS if no USDZ present
+    // Friendly hint for iOS if USDZ is missing
     const isIOS =
       /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
