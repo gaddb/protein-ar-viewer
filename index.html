@@ -1,73 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Protein AR Viewer - Table of Contents</title>
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; }
-        h1 { text-align: center; }
-        .model-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
-        .model-card { width: 250px; text-align: center; border: 1px solid #ccc; border-radius: 8px; padding: 10px; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        model-viewer { width: 100%; height: 200px; }
-        a { text-decoration: none; color: #007bff; }
-        a:hover { text-decoration: underline; }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Protein AR Viewer - Table of Contents</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; }
+    h1 { text-align: center; }
+    .model-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+    .model-card { width: 250px; text-align: center; border: 1px solid #ccc; border-radius: 8px; padding: 10px; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    model-viewer { width: 100%; height: 200px; }
+    a { text-decoration: none; color: #007bff; }
+    a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
 
-    <h1>Protein AR Viewer - Table of Contents</h1>
-    <div class="model-grid">
+  <h1>Protein AR Viewer - Table of Contents</h1>
+  <div class="model-grid">
 
-        <!-- Example Card for Model 1 -->
-        <div class="model-card">
-            <model-viewer src="models/5FYJ-5TE4.glb"
-                          alt="Model 1"
-                          camera-controls
-                          auto-rotate
-                          ar="false">
-            </model-viewer>
-            <h3>Model 1</h3>
-            <a href="pages/5FYJ-5TE4.html">View in Fullscreen & AR</a>
-        </div>
-
-        <!-- Example Card for Model 2 -->
-        <div class="model-card">
-            <model-viewer src="models/4MBS.glb"
-                          alt="Model 2"
-                          camera-controls
-                          auto-rotate
-                          ar="false">
-            </model-viewer>
-            <h3>Model 2</h3>
-            <a href="pages/4MBS.html">View in Fullscreen & AR</a>
-        </div>
-
-       <!-- Example Card for Model 3 -->
-        <div class="model-card">
-            <model-viewer src="models/4MBS_MRV.glb"
-                          alt="Model 2"
-                          camera-controls
-                          auto-rotate
-                          ar="false">
-            </model-viewer>
-            <h3>Model 3</h3>
-            <a href="pages/4MBS_MRV.html">View in Fullscreen & AR</a>
-        </div>
-
-      <!-- Example Card for Model 4 -->
-        <div class="model-card">
-            <model-viewer src="models/4INS.glb"
-                          alt="Model 4"
-                          camera-controls
-                          auto-rotate
-                          ar="false">
-            </model-viewer>
-            <h3>Model 4</h3>
-            <a href="pages/4INS.html">View in Fullscreen & AR</a>
-        </div>
-
+    <!-- Card: Model 1 -->
+    <div class="model-card">
+      <model-viewer src="models/5FYJ-5TE4.glb"
+                    alt="Model 1"
+                    camera-controls
+                    auto-rotate
+                    ar="false">
+      </model-viewer>
+      <h3>Model 1</h3>
+      <a href="pages/viewer.html?title=Model%201&glb=../models/5FYJ-5TE4.glb&usdz=../models/5FYJ-5TE4.usdz">
+        View in Fullscreen &amp; AR
+      </a>
     </div>
+
+    <!-- Card: Model 2 -->
+    <div class="model-card">
+      <model-viewer src="models/4MBS.glb"
+                    alt="Model 2"
+                    camera-controls
+                    auto-rotate
+                    ar="false">
+      </model-viewer>
+      <h3>Model 2</h3>
+      <a href="pages/viewer.html?title=Model%202&glb=../models/4MBS.glb&usdz=../models/4MBS.usdz">
+        View in Fullscreen &amp; AR
+      </a>
+    </div>
+
+    <!-- Card: Model 3 -->
+    <div class="model-card">
+      <model-viewer src="models/4MBS_MRV.glb"
+                    alt="Model 3"
+                    camera-controls
+                    auto-rotate
+                    ar="false">
+      </model-viewer>
+      <h3>Model 3</h3>
+      <a href="pages/viewer.html?title=Model%203&glb=../models/4MBS_MRV.glb&usdz=../models/4MBS_MRV.usdz">
+        View in Fullscreen &amp; AR
+      </a>
+    </div>
+
+    <!-- Card: Model 4 -->
+    <div class="model-card">
+      <model-viewer src="models/4INS.glb"
+                    alt="Model 4"
+                    camera-controls
+                    auto-rotate
+                    ar="false">
+      </model-viewer>
+      <h3>Model 4</h3>
+      <a href="pages/viewer.html?title=Model%204&glb=../models/4INS.glb&usdz=../models/4INS.usdz">
+        View in Fullscreen &amp; AR
+      </a>
+    </div>
+
+  </div>
 
 </body>
 </html>
