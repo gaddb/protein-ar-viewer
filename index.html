@@ -4,29 +4,43 @@
   <meta charset="UTF-8" />
   <title>Protein AR Viewer - Table of Contents</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- model-viewer for inline previews (AR disabled here) -->
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; }
-    h1 { text-align: center; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; color:#111; }
+    h1 { text-align: center; margin: 0 0 18px; }
     .model-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
-    .model-card { width: 250px; text-align: center; border: 1px solid #ccc; border-radius: 8px; padding: 10px; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    model-viewer { width: 100%; height: 200px; }
-    a { text-decoration: none; color: #007bff; }
-    a:hover { text-decoration: underline; }
+    .model-card {
+      width: 250px; text-align: center; border: 1px solid #ccc; border-radius: 8px;
+      padding: 10px; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      display: flex; flex-direction: column;
+    }
+    model-viewer.preview {
+      display: block; width: 100%; height: 200px; background-color:#fff;
+      position: relative; z-index: 0;
+    }
+    .model-card h3 { margin: 8px 0 4px; font-size: 16px; }
+    .model-card a { text-decoration: none; color: #007bff; font-size: 14px; }
+    .model-card a:hover { text-decoration: underline; }
+
+    /* Hide any AR button in the small previews (belt + suspenders) */
+    model-viewer.preview::part(ar-button) { display: none !important; }
   </style>
 </head>
 <body>
 
   <h1>Protein AR Viewer - Table of Contents</h1>
+
   <div class="model-grid">
 
     <!-- Card: Model 1 -->
     <div class="model-card">
       <model-viewer class="preview"
-                    src="models/5FYJ-5TE4.glb"
-                    alt="Model 1"
-                    camera-controls
-                    auto-rotate
+        src="models/5FYJ-5TE4.glb"
+        alt="Model 1"
+        camera-controls
+        auto-rotate
+        poster="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
       </model-viewer>
       <h3>Model 1</h3>
       <a href="pages/viewer.html?title=Model%201&glb=../models/5FYJ-5TE4.glb&usdz=../models/5FYJ-5TE4.usdz">
@@ -37,10 +51,11 @@
     <!-- Card: Model 2 -->
     <div class="model-card">
       <model-viewer class="preview"
-                    src="models/4MBS.glb"
-                    alt="Model 2"
-                    camera-controls
-                    auto-rotate
+        src="models/4MBS.glb"
+        alt="Model 2"
+        camera-controls
+        auto-rotate
+        poster="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
       </model-viewer>
       <h3>Model 2</h3>
       <a href="pages/viewer.html?title=Model%202&glb=../models/4MBS.glb&usdz=../models/4MBS.usdz">
@@ -51,10 +66,11 @@
     <!-- Card: Model 3 -->
     <div class="model-card">
       <model-viewer class="preview"
-                    src="models/4MBS_MRV.glb"
-                    alt="Model 3"
-                    camera-controls
-                    auto-rotate
+        src="models/4MBS_MRV.glb"
+        alt="Model 3"
+        camera-controls
+        auto-rotate
+        poster="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
       </model-viewer>
       <h3>Model 3</h3>
       <a href="pages/viewer.html?title=Model%203&glb=../models/4MBS_MRV.glb&usdz=../models/4MBS_MRV.usdz">
@@ -65,10 +81,11 @@
     <!-- Card: Model 4 -->
     <div class="model-card">
       <model-viewer class="preview"
-                    src="models/4INS.glb"
-                    alt="Model 4"
-                    camera-controls
-                    auto-rotate
+        src="models/4INS.glb"
+        alt="Model 4"
+        camera-controls
+        auto-rotate
+        poster="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
       </model-viewer>
       <h3>Model 4</h3>
       <a href="pages/viewer.html?title=Model%204&glb=../models/4INS.glb&usdz=../models/4INS.usdz">
