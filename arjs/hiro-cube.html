@@ -2,41 +2,28 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>AR.js HIRO Cube (robust)</title>
-<!-- Known-good versions -->
+<title>AR.js HIRO Cube (clean)</title>
+<!-- Pinned versions that worked with your camera -->
 <script src="https://cdn.jsdelivr.net/npm/aframe@1.2.0/dist/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#0f0;font:14px ui-monospace,Consolas,monospace}
   #log{position:fixed;left:0;right:0;top:0;max-height:44%;overflow:auto;white-space:pre-wrap;background:rgba(0,0,0,.6);padding:8px;z-index:100}
-  /* Hide VR/AR chrome */
-  .a-enter-vr-button, .a-enter-ar-button { display:none !important; }
+  .a-enter-vr-button,.a-enter-ar-button{display:none!important}
 </style>
 <body>
 <div id="log"></div>
 
 <a-scene
   embedded
-  vr-mode-ui="enabled: false"
+  vr-mode-ui="enabled:false"
   renderer="alpha:true; antialias:true"
-  arjs="
-    sourceType: webcam;
-    facingMode: environment;
-    trackingMethod: best;
-    videoTexture: true;
-    debugUIEnabled: false;
-    detectionMode: mono;
-    patternRatio: 0.90;
-    sourceWidth: 640; sourceHeight: 480;
-    displayWidth: 1280; displayHeight: 960
-  "
+  arjs="sourceType: webcam; facingMode: environment; trackingMethod: best; videoTexture: true; debugUIEnabled: false"
   loading-screen="enabled:false"
   id="scene">
 
-  <!-- Use the pattern file directly instead of preset -->
-  <a-marker type="pattern"
-            url="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/three.js/examples/marker-training/examples/pattern-files/pattern-hiro.patt"
-            emitevents="true" id="marker">
+  <!-- Use built-in HIRO (no .patt needed) -->
+  <a-marker preset="hiro" emitevents="true" id="marker">
     <a-box color="#39f" position="0 0.5 0" depth="1" height="1" width="1"></a-box>
   </a-marker>
 
