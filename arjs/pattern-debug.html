@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AR.js Pattern Debug (HIRO)</title>
+<!-- Pinned versions that work well together -->
+<script src="https://cdn.jsdelivr.net/npm/aframe@1.2.0/dist/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#0f0;font:14px ui-monospace,Consolas,monospace}
+  #log{position:fixed;left:0;right:0;top:0;max-height:40%;overflow:auto;white-space:pre-wrap;background:rgba(0,0,0,.5);padding:8px;z-index:100}
+  .a-enter-vr-button,.a-enter-ar-button{display:none!important}
+</style>
+<body>
+<div id="log"></div>
+
+<a-scene
+  embedded
+  vr-mode-ui="enabled:false"
+  renderer="alpha:true;antialias:true"
+  arjs="
+    sourceType: webcam;
+    facingMode: environment;
+    trackingMethod: best;
+    videoTexture: true;
+    cameraParametersUrl: https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/three.js/data/camera_para.dat;
+    debugUIEnabled: true;   <!-- ⬅ shows threshold sliders -->
+    detectionMode: mono;    <!-- pattern markers -->
+    maxDetectionRate: 60
+  "
+  id="scene">
+
+  <!-- Use the official HIRO pattern file explicitly -->
+  <a-marker
+    type="pattern"
+    url="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/three.js/examples/marker-training/examples/pattern-files/pattern-hiro.patt"
+    emitevents="true" id="marker">
+    <a-box color="#39f" position="0 0.5 0" depth="1" height="1" width="1"></a-box>
+  </a-marker>
+
+  <a-entity camera></a-entity>
+</a-scene>
+
+<script>
+  const log=(...a)=>document.getElementById('log').textContent+=a.join(' ')+'\n';
+  log('A-Frame', AFRAME.version);
+  scene.addEventListener('camera-init', e=>log('camera-init', JSON.stringify(e.detail||{})));
+  scene.addEventListener('camera-error', e=>log('camera-error', e && e.detail ? e.detail : 'unknown'));
+  marker.addEventListener('markerFound', ()=>log('markerFound'));
+  marker.addEventListener('markerLost',  ()=>log('markerLost'));
+</script>
+</body>
+</html>
