@@ -2,9 +2,10 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>AR.js Camera Test (logged)</title>
-<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.min.js"></script>
+<title>AR.js Camera Test (stable)</title>
+<!-- Pin A-Frame + AR.js to stable versions -->
+<script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#0f0;font:14px/1.4 ui-monospace,Consolas,monospace}
   #log{position:fixed;left:0;right:0;top:0;max-height:44%;overflow:auto;white-space:pre-wrap;
@@ -21,47 +22,58 @@
   log('secureContext:', location.protocol === 'https:');
   log('getUserMedia available:', !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
 
-  document.getElementById('startBtn').addEventListener('click', () => start('environment'));
-
-  async function start(facing){
+  document.getElementById('startBtn').addEventListener('click', async () => {
     try{
-      log('Requesting permission (preflight), facing=', facing);
-      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facing } } });
-      (s.getTracks()||[]).forEach(t=>t.stop()); // close preflight stream
+      // Preflight permission (closes immediately)
+      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
+      (s.getTracks()||[]).forEach(t=>t.stop());
       document.querySelector('.gate').style.display='none';
-      await new Promise(r=>setTimeout(r,250)); // small settle delay
+      await new Promise(r=>setTimeout(r,250));
 
-      buildScene(facing);
+      log('Building <a-scene> (stable AR.js, environment)…');
+      document.body.insertAdjacentHTML('beforeend', `
+        <a-scene embedded
+                 arjs="sourceType: webcam; facingMode: environment; trackingMethod: best; videoTexture: true; debugUIEnabled: false"
+                 renderer="alpha:true; antialias:true"
+                 loading-screen="enabled:false" id="scene">
+          <a-entity camera></a-entity>
+        </a-scene>
+      `);
+
+      const scene = document.getElementById('scene');
+      scene.addEventListener('camera-init', e=>log('camera-init:', JSON.stringify(e.detail||{})));
+      scene.addEventListener('camera-error', e=>log('camera-error:', e && e.detail ? e.detail : 'unknown'));
+
+      setTimeout(()=>{
+        const v = document.querySelector('video');
+        log('video present:', !!v, 'readyState:', v && v.readyState);
+        if (!v || (v.readyState||0) < 2){
+          log('No video feed — retry with front camera…');
+          // Retry with front cam
+          scene.parentNode.removeChild(scene);
+          document.body.insertAdjacentHTML('beforeend', `
+            <a-scene embedded
+                     arjs="sourceType: webcam; facingMode: user; trackingMethod: best; videoTexture: true; debugUIEnabled: false"
+                     renderer="alpha:true; antialias:true"
+                     loading-screen="enabled:false" id="scene2">
+              <a-entity camera></a-entity>
+            </a-scene>
+          `);
+          const s2 = document.getElementById('scene2');
+          s2.addEventListener('camera-init', e=>log('camera-init(front):', JSON.stringify(e.detail||{})));
+          s2.addEventListener('camera-error', e=>log('camera-error(front):', e && e.detail ? e.detail : 'unknown'));
+          setTimeout(()=>{
+            const v2 = document.querySelector('video');
+            log('video(front) present:', !!v2, 'readyState:', v2 && v2.readyState);
+            if (!v2 || (v2.readyState||0) < 2) log('Still no feed — check site/app permissions.');
+          }, 1500);
+        }
+      }, 1200);
+
     }catch(e){
       log('Preflight error:', e.name, e.message);
-      if (facing==='environment'){ // try front cam
-        log('Retrying with facing="user"…');
-        start('user');
-      }
     }
-  }
-
-  function buildScene(facing){
-    log('Building <a-scene> with facingMode=', facing);
-    document.body.insertAdjacentHTML('beforeend', `
-      <a-scene embedded
-               arjs="trackingMethod: best; sourceType: webcam; facingMode: ${facing}; debugUIEnabled: false"
-               loading-screen="enabled:false" id="scene">
-        <a-entity camera></a-entity>
-      </a-scene>
-    `);
-    const scene = document.getElementById('scene');
-    scene.addEventListener('camera-init', e=>log('camera-init:', JSON.stringify(e.detail||{})));
-    scene.addEventListener('camera-error', e=>log('camera-error:', e && e.detail ? e.detail : 'unknown'));
-    // If still no video, tell us after a moment
-    setTimeout(()=>{
-      const v = document.querySelector('video');
-      log('video present:', !!v, ' readyState:', v && v.readyState);
-      if (!v || (v.readyState||0) < 2){
-        log('No video feed detected — check site/app camera permissions and try again.');
-      }
-    }, 2000);
-  }
+  });
 </script>
 </body>
 </html>
