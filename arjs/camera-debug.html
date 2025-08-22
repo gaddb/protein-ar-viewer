@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Camera Debug</title>
+<style>
+  html,body{margin:0;background:#000;color:#0f0;font:14px/1.4 ui-monospace,Consolas,monospace}
+  #log{white-space:pre-wrap;padding:10px}
+  .gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  button{font:600 16px system-ui,Arial;padding:14px 18px;border-radius:10px;border:0;background:#0a84ff;color:#fff}
+  video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+</style>
+<body>
+<div id="log"></div>
+<div class="gate"><button id="btn" onclick="start()">Tap to enable camera</button></div>
+<video id="v" autoplay playsinline muted></video>
+<script>
+  const log = (...a)=>{document.getElementById('log').textContent += a.join(' ') + '\n';};
+  log('isSecureContext:', location.protocol === 'https:');
+  log('navigator.mediaDevices:', !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
+
+  async function start(){
+    log('CLICK received at', new Date().toISOString());
+    const v = document.getElementById('v');
+    try{
+      // Try back camera; if that fails, fall back to "any camera"
+      log('Requesting camera (environment)…');
+      let stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' } } });
+      log('Got stream (environment). tracks=', stream.getTracks().length);
+      v.srcObject = stream; v.style.display='block'; document.querySelector('.gate').style.display='none';
+      return;
+    }catch(e){
+      log('Environment failed:', e.name, e.message);
+    }
+    try{
+      log('Requesting camera (any)…');
+      let stream = await navigator.mediaDevices.getUserMedia({ video:true });
+      log('Got stream (any). tracks=', stream.getTracks().length);
+      v.srcObject = stream; v.style.display='block'; document.querySelector('.gate').style.display='none';
+    }catch(e2){
+      log('Any-camera failed:', e2.name, e2.message);
+      log('HINT: On Android Chrome: lock icon → Site settings → Camera → Allow. On iOS Safari: Settings → Safari → Camera → Allow.');
+    }
+  }
+</script>
+</body>
+</html>
