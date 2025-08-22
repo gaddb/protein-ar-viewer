@@ -4,10 +4,7 @@
   <meta charset="utf-8" />
   <title>Protein AR Viewer</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-
-  <!-- model-viewer -->
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-
   <style>
     :root { --header-h: 48px; }
     html, body { height: 100%; margin: 0; background: #fff; color: #000; font-family: Arial, sans-serif; }
@@ -24,10 +21,9 @@
       width: 100%;
       height: calc(100vh - var(--header-h));
       background-color: #fff;
-      touch-action: none; /* smoother touch interactions */
+      touch-action: none;
     }
 
-    /* Buttons / notes that overlay the canvas */
     .ar-btn {
       position: absolute; right: 14px; bottom: 14px; z-index: 4;
       border: 0; padding: 10px 14px; border-radius: 8px; font-weight: 600;
@@ -51,22 +47,16 @@
     alt="3D molecular model"
     loading="eager"
     reveal="auto"
-
     camera-controls
     auto-rotate
     bounds="tight"
     environment-image="neutral"
-
-    <!-- Nice wide range so you can zoom in close -->
     camera-orbit="0deg 65deg 130%"
     max-camera-orbit="auto auto 2500%"
     min-field-of-view="15deg"
     max-field-of-view="90deg"
-
     exposure="1"
     shadow-intensity="0.25"
-
-    <!-- AR -->
     ar
     ar-modes="webxr scene-viewer quick-look"
     ar-placement="floor"
@@ -94,7 +84,7 @@
       if (usdz) mv.setAttribute('ios-src', usdz);
     }
 
-    // Helpful hint for iOS if USDZ is missing
+    // Hint for iOS if USDZ is missing (Quick Look needs ios-src)
     const isIOS =
       /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
