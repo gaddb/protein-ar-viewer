@@ -10,35 +10,50 @@
     html,body{margin:0;height:100%;overflow:hidden;background:#000}
     .gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;z-index:99}
     .gate button{font:600 16px system-ui,Arial;padding:14px 18px;border-radius:10px;border:0;background:#0a84ff;color:#fff}
-    .warn{position:fixed;top:8px;left:8px;right:8px;color:#fff;background:#c33;padding:8px;display:none}
+    .warn{position:fixed;top:8px;left:8px;right:8px;color:#fff;background:#c33;padding:8px;display:none;z-index:100}
   </style>
 </head>
 <body>
-  <div id="warn" class="warn">No camera. In Chrome: lock icon → Site settings → Camera → Allow.</div>
+  <div id="warn" class="warn"></div>
   <div class="gate" id="gate"><button id="startBtn">Tap to enable camera</button></div>
-
-  <a-scene embedded arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false"
-           loading-screen="enabled:false" id="scene">
-    <!-- no markers/models; just start the camera -->
-    <a-entity camera></a-entity>
-  </a-scene>
 
   <script>
     const warn = document.getElementById('warn');
-    document.getElementById('startBtn').addEventListener('click', async () => {
+    const gate = document.getElementById('gate');
+
+    async function requestCamera() {
       try {
-        const s = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
+        const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
+        // stop preflight stream; AR.js will open its own
         (s.getTracks()||[]).forEach(t=>t.stop());
-        document.getElementById('gate').style.display='none';
-        setTimeout(()=>window.dispatchEvent(new Event('resize')),100);
-      } catch(e) {
-        warn.style.display='block';
+        gate.style.display = 'none';
+        startScene();
+      } catch (e) {
+        warn.textContent = 'Camera permission denied or unavailable. Allow camera in site settings and reload.';
+        warn.style.display = 'block';
       }
-    });
-    setTimeout(()=>{
-      const v = document.querySelector('video');
-      if (!v || (v.readyState||0) < 2) warn.style.display='block';
-    }, 5000);
+    }
+
+    function startScene() {
+      // Create the <a-scene> only AFTER permission was granted
+      document.body.insertAdjacentHTML('beforeend', `
+        <a-scene embedded
+                 arjs="trackingMethod: best; sourceType: webcam; sourceParameters: { facingMode: 'environment' }; debugUIEnabled: false"
+                 loading-screen="enabled:false" id="scene">
+          <a-entity camera></a-entity>
+        </a-scene>
+      `);
+      // If the camera still fails, surface AR.js camera errors
+      setTimeout(() => {
+        const video = document.querySelector('video');
+        if (!video || (video.readyState||0) < 2) {
+          warn.textContent = 'Camera didn\\'t start. Check site/app permissions for the browser.';
+          warn.style.display = 'block';
+        }
+      }, 4000);
+    }
+
+    document.getElementById('startBtn').addEventListener('click', requestCamera);
   </script>
 </body>
 </html>
