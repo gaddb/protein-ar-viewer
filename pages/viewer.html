@@ -6,32 +6,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
-    :root { --header-h: 48px; }
-    html, body { height: 100%; margin: 0; background: #fff; color: #000; font-family: Arial, sans-serif; }
-    body { padding-top: var(--header-h); }
+    html,body { height:100%; margin:0; background:#fff; color:#000; font-family:Arial, sans-serif; }
     header {
-      position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
-      display: flex; align-items: center; gap: 12px; padding: 10px 14px;
-      background: rgba(255,255,255,.95); border-bottom: 1px solid #e5e5e5; z-index: 3;
+      position:fixed; top:0; left:0; right:0; padding:10px 14px;
+      background:rgba(255,255,255,.9); z-index:2; display:flex; align-items:center; gap:12px;
+      border-bottom:1px solid #e5e5e5;
     }
-    header h1 { font-size: 16px; margin: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    header a { color: #0a66c2; text-decoration: none; }
-
-    model-viewer {
-      width: 100%;
-      height: calc(100vh - var(--header-h));
-      background-color: #fff;
-      touch-action: none;
-    }
-
+    header h1 { font-size:16px; margin:0; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    header a { color:#0a66c2; text-decoration:none; }
+    model-viewer { width:100%; height:100%; background-color:#fff; }
+    .note { position:fixed; bottom:8px; left:8px; right:8px; z-index:2; font-size:12px; opacity:.85; color:#333; }
     .ar-btn {
-      position: absolute; right: 14px; bottom: 14px; z-index: 4;
-      border: 0; padding: 10px 14px; border-radius: 8px; font-weight: 600;
-      background: #0a84ff; color: #fff;
-    }
-    .note {
-      position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 2;
-      font-size: 12px; opacity: .9; color: #333;
+      position:fixed; right:14px; bottom:14px; z-index:3;
+      border:0; padding:10px 14px; border-radius:8px; background:#0a84ff; color:#fff; font-weight:600;
     }
   </style>
 </head>
@@ -44,72 +31,48 @@
   <model-viewer id="mv"
     src=""
     ios-src=""
-    alt="3D molecular model"
-    loading="eager" reveal="auto"
-    camera-controls auto-rotate bounds="tight" environment-image="neutral"
-    camera-orbit="0deg 65deg 130%" max-camera-orbit="auto auto 2500%"
-    min-field-of-view="15deg" max-field-of-view="90deg"
-    exposure="1" shadow-intensity="0.25"
-    ar ar-modes="webxr scene-viewer quick-look"
-    ar-placement="floor" ar-scale="fixed">
+    camera-controls
+    auto-rotate
+    ar
+    ar-modes="webxr scene-viewer quick-look"
+    quick-look-browsers="safari chrome"
+    ar-placement="floor"
+    ar-scale="fixed"
+    bounds="tight"
+    exposure="1"
+    shadow-intensity="0.2">
     <button slot="ar-button" class="ar-btn">View in AR</button>
-    <div id="note" class="note"></div>
   </model-viewer>
+
+  <div id="note" class="note"></div>
 
   <script>
     // Parse query params: ?title=...&glb=...&usdz=...
     const p = new URLSearchParams(location.search);
     const title = p.get('title') || '';
-    const glb   = p.get('glb') || '';
-    const usdz  = p.get('usdz') || '';
+    const glb = p.get('glb');
+    const usdz = p.get('usdz') || '';
 
     if (title) document.getElementById('title').textContent = title;
 
     const mv = document.getElementById('mv');
-    const note = document.getElementById('note');
-
-    // Platform sniff (good enough)
-    const ua = navigator.userAgent;
-    const isAndroid = /Android/i.test(ua);
-    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-    function setNote(msg) { note.textContent = msg; }
+    const noteEl = document.getElementById('note');
 
     if (!glb) {
-      setNote('Missing ?glb= path in URL.');
+      noteEl.textContent = 'Missing ?glb= path in URL.';
     } else {
-      mv.src = glb;
-      if (usdz) mv.setAttribute('ios-src', usdz);
+      mv.src = glb;                 // e.g., ../models/4INS.glb
+      if (usdz) mv.setAttribute('ios-src', usdz);  // e.g., ../models/4INS.usdz
     }
 
-    // Diagnostics: explain why AR is hidden if it disappears
-    // 1) When model loads, check AR availability
-    mv.addEventListener('load', async () => {
-      // Some builds expose canActivateAR; if not, infer the common cases
-      const canAR = ('canActivateAR' in mv) ? mv.canActivateAR : (isAndroid || (isIOS && !!usdz));
-      if (!canAR) {
-        if (isIOS && !usdz) {
-          setNote('iOS AR requires a USDZ (ios-src). Add &usdz=../models/YourModel.usdz to enable “View in AR”.');
-        } else if (isAndroid) {
-          setNote('AR button hidden: use Chrome on Android with Scene Viewer/WebXR support, and ensure the GLB URL is reachable over HTTPS.');
-        } else {
-          setNote('AR not available on this device/browser.');
-        }
-      } else {
-        setNote('Tip: Use two fingers to zoom; rotate with one. “View in AR” places on the floor at real-world scale.');
-      }
-    });
+    // Gentle guidance for iOS if no USDZ present
+    const isIOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-    // 2) Surface AR lifecycle events (will overwrite note with status)
-    mv.addEventListener('ar-status', (ev) => {
-      const {status, reason} = ev.detail || {};
-      if (status === 'failed') setNote('AR failed: ' + (reason || 'unknown'));
-      // When not-presenting, we leave the earlier tip/reason text.
-    });
-
-    mv.addEventListener('error', (ev) => {
-      setNote('Model error: ' + (ev.message || ev.detail || 'unknown'));
-    });
+    if (isIOS && !usdz) {
+      noteEl.textContent = 'iOS AR requires a USDZ. Add &usdz=../models/YourModel.usdz to enable “View in AR”.';
+    }
   </script>
 </body>
 </html>
