@@ -2,14 +2,18 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>AR.js Pattern Debug (HIRO)</title>
-<!-- Pinned versions that work well together -->
+<title>AR.js Pattern Debug (A-Frame)</title>
 <script src="https://cdn.jsdelivr.net/npm/aframe@1.2.0/dist/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#0f0;font:14px ui-monospace,Consolas,monospace}
-  #log{position:fixed;left:0;right:0;top:0;max-height:40%;overflow:auto;white-space:pre-wrap;background:rgba(0,0,0,.5);padding:8px;z-index:100}
+  #log{position:fixed;left:0;right:0;top:0;max-height:36%;overflow:auto;white-space:pre-wrap;background:rgba(0,0,0,.55);padding:8px;z-index:100}
+  #panel{position:fixed;left:8px;bottom:8px;right:8px;background:rgba(0,0,0,.55);padding:8px;border-radius:8px;z-index:101}
+  #panel label{display:block;margin:6px 0 2px}
   .a-enter-vr-button,.a-enter-ar-button{display:none!important}
+  /* try to avoid the “squished” look */
+  video#arjs-video{width:100vw!important;height:100vh!important;object-fit:cover!important}
+  a-scene{position:fixed;inset:0}
 </style>
 <body>
 <div id="log"></div>
@@ -23,31 +27,105 @@
     facingMode: environment;
     trackingMethod: best;
     videoTexture: true;
+    detectionMode: mono;             /* pattern markers */
     cameraParametersUrl: https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/three.js/data/camera_para.dat;
-    debugUIEnabled: true;   <!-- ⬅ shows threshold sliders -->
-    detectionMode: mono;    <!-- pattern markers -->
-    maxDetectionRate: 60
+    debugUIEnabled: false            /* (only shows in three.js build) */
   "
   id="scene">
 
-  <!-- Use the official HIRO pattern file explicitly -->
-  <a-marker
-    type="pattern"
-    url="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/three.js/examples/marker-training/examples/pattern-files/pattern-hiro.patt"
-    emitevents="true" id="marker">
+  <!-- Use the official HIRO pattern directly (no local .patt needed) -->
+  <a-marker type="pattern"
+            url="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/three.js/examples/marker-training/examples/pattern-files/pattern-hiro.patt"
+            emitevents="true" id="marker">
     <a-box color="#39f" position="0 0.5 0" depth="1" height="1" width="1"></a-box>
   </a-marker>
 
   <a-entity camera></a-entity>
 </a-scene>
 
+<!-- Simple “control panel” -->
+<div id="panel">
+  <div><b>Controls</b></div>
+  <label>Threshold <span id="tval">–</span></label>
+  <input id="th" type="range" min="0" max="255" step="1" value="128">
+  <div style="margin-top:6px">
+    <button id="monoBtn">Pattern mode</button>
+    <button id="matrixBtn">Barcode mode</button>
+  </div>
+  <div style="margin-top:6px; font-size:12px; opacity:.9">
+    Tip: hold marker 30–50 cm from camera in even, matte lighting. Ensure full black border is visible.
+  </div>
+</div>
+
 <script>
-  const log=(...a)=>document.getElementById('log').textContent+=a.join(' ')+'\n';
+  const log = (...a)=>{document.getElementById('log').textContent += a.join(' ')+'\n';};
+  const scene = document.getElementById('scene');
+  const marker = document.getElementById('marker');
+  const slider = document.getElementById('th');
+  const tval = document.getElementById('tval');
+
   log('A-Frame', AFRAME.version);
+
   scene.addEventListener('camera-init', e=>log('camera-init', JSON.stringify(e.detail||{})));
   scene.addEventListener('camera-error', e=>log('camera-error', e && e.detail ? e.detail : 'unknown'));
   marker.addEventListener('markerFound', ()=>log('markerFound'));
   marker.addEventListener('markerLost',  ()=>log('markerLost'));
+
+  // After AR.js starts, try to surface the internal binarized canvas + hook threshold (if available)
+  scene.addEventListener('loaded', () => {
+    setTimeout(() => {
+      try {
+        const arSys = scene.systems['arjs'];
+        const ctx = arSys && arSys.arToolkitContext;
+        const ctrl = ctx && ctx.arController;
+        if (ctrl && ctrl.canvas) {
+          // show what the detector sees (binarized/grayscale view)
+          const dbg = ctrl.canvas;
+          dbg.style.position = 'fixed';
+          dbg.style.right = '8px';
+          dbg.style.bottom = '72px';
+          dbg.style.width = '160px';
+          dbg.style.height = '120px';
+          dbg.style.zIndex = 102;
+          dbg.style.border = '1px solid rgba(255,255,255,.4)';
+          document.body.appendChild(dbg);
+          log('debug canvas attached');
+        }
+        // live threshold (works if ARToolKit exposes setThreshold)
+        if (ctrl && typeof ctrl.setThreshold === 'function') {
+          const setT = (v)=>{ ctrl.setThreshold(v|0); tval.textContent = v; };
+          slider.oninput = (e)=> setT(e.target.value);
+          setT(slider.value);
+        } else {
+          tval.textContent = 'n/a';
+          log('setThreshold not available in this build; showing canvas only.');
+        }
+      } catch (err) {
+        log('debug hookup error:', err && err.message ? err.message : err);
+      }
+    }, 800);
+  });
+
+  // Quick toggles to compare detection modes (reloads scene with new params)
+  document.getElementById('monoBtn').onclick = () => {
+    location.href = location.pathname + '?mode=mono';
+  };
+  document.getElementById('matrixBtn').onclick = () => {
+    location.href = location.pathname + '?mode=barcode';
+  };
+
+  // Respect ?mode=… to switch scene attributes
+  (function(){
+    const m = new URLSearchParams(location.search).get('mode');
+    if (m === 'barcode') {
+      // Switch to barcode mode (print a 4x4 barcode ID, e.g., 5)
+      scene.setAttribute('arjs',
+        'sourceType: webcam; facingMode: environment; trackingMethod: best; videoTexture: true; detectionMode: mono_and_matrix; matrixCodeType: 4x4;');
+      marker.setAttribute('type','barcode');
+      marker.setAttribute('value','5');
+      marker.removeAttribute('url');
+    }
+  })();
 </script>
 </body>
 </html>
