@@ -19,9 +19,14 @@
       display: block; width: 100%; height: 200px; background-color:#fff;
       position: relative; z-index: 0;
     }
-    .model-card h3 { margin: 8px 0 4px; font-size: 16px; }
+    .model-card h3 { margin: 8px 0 6px; font-size: 16px; }
     .model-card a { text-decoration: none; color: #007bff; font-size: 14px; }
     .model-card a:hover { text-decoration: underline; }
+
+    /* QR code block */
+    .qr-wrap { margin-top: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .qr-wrap img { width: 120px; height: 120px; border: 1px solid #eee; border-radius: 6px; }
+    .qr-caption { font-size: 12px; color: #555; line-height: 1.2; }
 
     /* Hide any AR button in the small previews (belt + suspenders) */
     model-viewer.preview::part(ar-button) { display: none !important; }
@@ -36,64 +41,98 @@
     <!-- Card: Src SH2 Domain (1SPR): Secondary Structures -->
     <div class="model-card">
       <model-viewer class="preview"
-        src="models/1SPR_2Structure.glb"
+        src="./models/1SPR_2Structure.glb"
         alt="Src SH2 Domain (1SPR): Secondary Structures"
         camera-controls
         auto-rotate
         poster="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
       </model-viewer>
       <h3>Src SH2 Domain (1SPR): Secondary Structures</h3>
-      <a href="pages/viewer.html?title=Model%201&glb=../models/1SPR_2Structure.glb&usdz=../models/1SPR_2Structure.usdz">
+      <!-- If your viewer page is /pages/view.html instead of viewer.html, change it below and in the other links -->
+      <a class="viewer-link" href="./pages/viewer.html?title=Model%201&glb=../models/1SPR_2Structure.glb&usdz=../models/1SPR_2Structure.usdz">
         View in Fullscreen &amp; AR
       </a>
+      <div class="qr-wrap"></div>
     </div>
 
     <!-- Card: EcoRI Recognition of DNA (1ERI) -->
     <div class="model-card">
       <model-viewer class="preview"
-        src="models/1ERI.glb"
+        src="./models/1ERI.glb"
         alt="EcoRI Recognition of DNA (1ERI)"
         camera-controls
         auto-rotate
         poster="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
       </model-viewer>
       <h3>EcoRI Recognition of DNA (1ERI)</h3>
-      <a href="pages/viewer.html?title=Model%202&glb=../models/1ERI.glb&usdz=../models/1ERI.usdz">
+      <a class="viewer-link" href="./pages/viewer.html?title=Model%202&glb=../models/1ERI.glb&usdz=../models/1ERI.usdz">
         View in Fullscreen &amp; AR
       </a>
+      <div class="qr-wrap"></div>
     </div>
 
     <!-- Card: gp120 binding to CCR5 (6MEO) -->
     <div class="model-card">
       <model-viewer class="preview"
-        src="models/6MEO.glb"
+        src="./models/6MEO.glb"
         alt="gp120 binding to CCR5 (6MEO)"
         camera-controls
         auto-rotate
         poster="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
       </model-viewer>
       <h3>gp120 binding to CCR5 (6MEO)</h3>
-      <a href="pages/viewer.html?title=Model%203&glb=../models/6MEO.glb&usdz=../models/6MEO.usdz">
+      <a class="viewer-link" href="./pages/viewer.html?title=Model%203&glb=../models/6MEO.glb&usdz=../models/6MEO.usdz">
         View in Fullscreen &amp; AR
       </a>
+      <div class="qr-wrap"></div>
     </div>
 
     <!-- Card: Maraviroc bound to CCR5 (4MBS) -->
     <div class="model-card">
       <model-viewer class="preview"
-        src="models/4MBS.glb"
+        src="./models/4MBS.glb"
         alt="Maraviroc bound to CCR5 (4MBS)"
         camera-controls
         auto-rotate
         poster="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
       </model-viewer>
       <h3>Maraviroc bound to CCR5 (4MBS)</h3>
-      <a href="pages/viewer.html?title=Model%204&glb=../models/4MBS.glb&usdz=../models/4MBS.usdz">
+      <a class="viewer-link" href="./pages/viewer.html?title=Model%204&glb=../models/4MBS.glb&usdz=../models/4MBS.usdz">
         View in Fullscreen &amp; AR
       </a>
+      <div class="qr-wrap"></div>
     </div>
 
   </div>
 
+  <script>
+    // Build a QR code under each "viewer-link", pointing to the absolute URL
+    // Uses a simple public QR image API. You can swap to another service if preferred.
+    (function () {
+      const links = document.querySelectorAll('.model-card .viewer-link');
+      links.forEach(link => {
+        const card = link.closest('.model-card');
+        const title = card?.querySelector('h3')?.textContent?.trim() || 'Model';
+        // Resolve to absolute URL (important on GitHub Pages subpaths)
+        const absoluteUrl = new URL(link.getAttribute('href'), document.baseURI).href;
+
+        const qrImg = new Image();
+        qrImg.width = 120;
+        qrImg.height = 120;
+        qrImg.loading = 'lazy';
+        qrImg.alt = `QR code to open: ${title}`;
+        // API: https://goqr.me/api/ or https://api.qrserver.com
+        qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=0&data=' + encodeURIComponent(absoluteUrl);
+
+        const wrap = card.querySelector('.qr-wrap');
+        const cap = document.createElement('div');
+        cap.className = 'qr-caption';
+        cap.textContent = 'Scan for AR / Fullscreen';
+
+        wrap.appendChild(qrImg);
+        wrap.appendChild(cap);
+      });
+    })();
+  </script>
 </body>
 </html>
