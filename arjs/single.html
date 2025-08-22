@@ -4,11 +4,8 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
   <title>AR.js Single Marker (HIRO) — Protein</title>
-  <!-- A-Frame + AR.js -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.min.js"></script>
-  <!-- THREE DRACO loader (match THREE version bundled with A-Frame 1.5.x) -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/DRACOLoader.js"></script>
   <style>
     html,body{margin:0;height:100%;overflow:hidden;background:#000}
     .gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;z-index:99}
@@ -25,48 +22,22 @@
     const glbUrl = params.get('glb') || '../models/4INS.glb';
     const warn = document.getElementById('warn');
 
-    // Patch THREE.GLTFLoader to use a shared DRACO loader (WASM) for compressed GLBs
-    function enableDraco() {
-      try {
-        if (!window.THREE || !THREE.DRACOLoader || !THREE.GLTFLoader) return;
-        const draco = new THREE.DRACOLoader();
-        // Use Google's hosted WASM decoder
-        draco.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
-        // Monkey-patch: wrap the GLTFLoader constructor so every instance uses DRACO
-        const OrigGLTFLoader = THREE.GLTFLoader;
-        THREE.GLTFLoader = function(manager){
-          const loader = new OrigGLTFLoader(manager);
-          loader.setDRACOLoader(draco);
-          return loader;
-        };
-        THREE.GLTFLoader.prototype = OrigGLTFLoader.prototype;
-      } catch (e) {
-        console.warn('Draco enable failed:', e);
-      }
-    }
-
     async function start() {
       try {
-        // 1) Explicitly ask for camera on user gesture
+        // Permission first
         const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
-        (s.getTracks()||[]).forEach(t=>t.stop()); // close preflight stream
+        (s.getTracks()||[]).forEach(t=>t.stop());
         document.querySelector('.gate').style.display='none';
 
-        // 2) Enable Draco before the scene is created
-        enableDraco();
-
-        // 3) Create the AR.js scene AFTER permission is granted
+        // Build AR scene (correct AR.js attribute syntax)
         document.body.insertAdjacentHTML('beforeend', `
           <a-scene embedded
                    renderer="logarithmicDepthBuffer:true;antialias:true"
-                   arjs="trackingMethod: best; sourceType: webcam; sourceParameters: { facingMode: 'environment' }; debugUIEnabled: false"
+                   arjs="trackingMethod: best; sourceType: webcam; facingMode: environment; debugUIEnabled: false"
                    loading-screen="enabled:false" id="scene">
-            <!-- Built-in HIRO marker -->
             <a-marker preset="hiro" emitevents="true" id="marker">
-              <!-- GLB model (Draco or not) -->
               <a-entity id="model" gltf-model="url(${glbUrl})"
                         scale="0.25 0.25 0.25" rotation="0 0 0" visible="false"></a-entity>
-              <!-- Fallback: shows if model fails to load, to prove camera+marker are OK -->
               <a-box id="fallback" position="0 0.5 0" depth="1" height="1" width="1" color="#39f" visible="false"></a-box>
             </a-marker>
             <a-entity camera></a-entity>
@@ -80,21 +51,10 @@
         marker.addEventListener('markerFound', ()=> model.setAttribute('visible','true'));
         model.addEventListener('model-error', ()=>{
           fall.setAttribute('visible','true');
-          warn.textContent = 'Model failed to load (bad URL or unsupported compression). If the blue box tracks, camera + marker are OK.';
+          warn.textContent = 'Model failed to load (often Draco compression or bad URL). If the blue box tracks, camera + marker are OK.';
           warn.style.display = 'block';
         });
-
-        // Nudge layout & surface camera failures
-        setTimeout(() => {
-          window.dispatchEvent(new Event('resize'));
-          const video = document.querySelector('video');
-          if (!video || (video.readyState||0) < 2) {
-            warn.textContent = 'Camera did not start. Check site/app permissions and reload.';
-            warn.style.display = 'block';
-          }
-        }, 1200);
-
-      } catch(e) {
+      } catch (e) {
         warn.textContent = 'Camera permission denied or unavailable. Allow camera in site settings and reload.';
         warn.style.display = 'block';
       }
