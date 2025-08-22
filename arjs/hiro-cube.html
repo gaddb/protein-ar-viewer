@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AR.js HIRO Cube (sanity)</title>
+<!-- Known-good versions -->
+<script src="https://cdn.jsdelivr.net/npm/aframe@1.2.0/dist/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#0f0;font:14px ui-monospace,Consolas,monospace}
+  #log{position:fixed;left:0;right:0;top:0;max-height:44%;overflow:auto;white-space:pre-wrap;background:rgba(0,0,0,.6);padding:8px;z-index:100}
+</style>
+<body>
+<div id="log"></div>
+
+<a-scene
+  embedded
+  renderer="alpha:true; antialias:true"
+  arjs="sourceType: webcam; facingMode: environment; trackingMethod: best; videoTexture: true; debugUIEnabled: false"
+  loading-screen="enabled:false"
+  id="scene">
+  <a-marker preset="hiro" emitevents="true" id="marker">
+    <a-box color="#39f" position="0 0.5 0" depth="1" height="1" width="1"></a-box>
+  </a-marker>
+  <a-entity camera></a-entity>
+</a-scene>
+
+<script>
+  const log = (...a)=>{document.getElementById('log').textContent += a.join(' ') + '\n';};
+  log('A-Frame:', AFRAME.version);
+  const scene = document.getElementById('scene');
+  scene.addEventListener('camera-init',  e=>log('camera-init:',  JSON.stringify(e.detail||{})));
+  scene.addEventListener('camera-error', e=>log('camera-error:', e && e.detail ? e.detail : 'unknown'));
+  document.getElementById('marker').addEventListener('markerFound', ()=>log('markerFound'));
+  setTimeout(()=>{ const v=document.querySelector('video'); log('video present:',!!v,'readyState:',v&&v.readyState); }, 1500);
+</script>
+</body>
+</html>
+
