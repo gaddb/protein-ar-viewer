@@ -11,71 +11,84 @@
     .hud{position:fixed;left:0;right:0;bottom:0;padding:8px 12px;
          color:#fff;font:14px/1.4 system-ui,Arial;background:rgba(0,0,0,.35)}
     .hud b{color:#7ff}
+    .warn{position:fixed;top:8px;left:8px;right:8px;color:#fff;background:#c33;padding:8px;display:none}
+    .gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+          background:#000;z-index:99}
+    .gate button{font:600 16px/1.2 system-ui,Arial;padding:14px 18px;border-radius:10px;border:0;background:#0a84ff;color:#fff}
   </style>
 </head>
 <body>
-  <a-scene embedded renderer="logarithmicDepthBuffer:true;antialias:true"
-           arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false"
-           gesture-detector>
-    <a-assets>
-      <a-asset-item id="mdl"></a-asset-item>
-    </a-assets>
+  <div id="warn" class="warn">Camera permission blocked or model failed to load. Check Chrome → Site settings → Camera.</div>
 
-    <!-- Built-in HIRO marker (no .patt needed). Replace with pattern url="markers/single.patt" later if you want -->
-    <a-marker preset="hiro" emitevents="true" id="m_single">
-      <a-entity id="model" gltf-model="#mdl" scale="0.25 0.25 0.25"
-                rotation="0 0 0"
-                gesture-handler="minScale:0.05; maxScale:8; rotationFactor:1.0"
-                visible="false"></a-entity>
+  <!-- Tap-to-start overlay to force the camera permission prompt -->
+  <div class="gate" id="gate">
+    <button id="startBtn">Tap to enable camera</button>
+  </div>
+
+  <a-scene
+    embedded
+    renderer="logarithmicDepthBuffer:true;antialias:true"
+    arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false"
+    loading-screen="enabled: false"
+    id="scene">
+    <!-- HIRO marker (no .patt needed) -->
+    <a-marker preset="hiro" emitevents="true" id="marker">
+      <a-entity id="model"
+        gltf-model="url(../models/4INS.glb)"  <!-- replaced via ?glb=... -->
+        scale="0.25 0.25 0.25"
+        rotation="0 0 0"
+        visible="false">
+      </a-entity>
+      <!-- Fallback geometry if model fails -->
+      <a-box id="fallback" position="0 0.5 0" depth="1" height="1" width="1" color="#39f" visible="false"></a-box>
     </a-marker>
-
     <a-entity camera></a-entity>
   </a-scene>
 
   <div class="hud">
-    <b>Tips:</b> Pinch to scale, twist to rotate. Good lighting, matte print. Use HIRO marker for this page.
+    <b>Tips:</b> Use a printed HIRO marker. Good, even lighting. If you see a blue box, your GLB path is wrong.
   </div>
 
   <script>
-    // Load GLB from ?glb=... (defaults to a sample path)
+    // Accept ?glb=... to override default model
     const p = new URLSearchParams(location.search);
-    const glb = p.get('glb') || '../models/4INS.glb';
-    document.getElementById('mdl').setAttribute('src', glb);
+    const glb = p.get('glb');
+    if (glb) document.getElementById('model').setAttribute('gltf-model', `url(${glb})`);
 
-    // Minimal gestures (inline)
-    AFRAME.registerComponent('gesture-detector',{
-      init(){const el=this.el;const s={active:false,dist:0,ang:0};
-        const attach=()=>{const c=el.renderer&&el.renderer.domElement;if(!c)return setTimeout(attach,50);
-          c.addEventListener('touchstart',e=>{if(e.touches.length===2){const[a,b]=e.touches;
-            s.dist=Math.hypot(b.clientX-a.clientX,b.clientY-a.clientY);
-            s.ang=Math.atan2(b.clientY-a.clientY,b.clientX-a.clientX);s.active=true;el.emit('twofingerstart');}});
-          const mv=e=>{if(!s.active||e.touches.length!==2)return;const[a,b]=e.touches;
-            const d=Math.hypot(b.clientX-a.clientX,b.clientY-a.clientY);
-            const ang=Math.atan2(b.clientY-a.clientY,b.clientX-a.clientX);
-            const f=s.dist?d/s.dist:1;let rd=ang-s.ang;rd=Math.atan2(Math.sin(rd),Math.cos(rd));
-            el.emit('twofingermove',{scaleFactor:f,rotationDeltaDeg:rd*180/Math.PI});};
-          const end=()=>{if(s.active){s.active=false;el.emit('twofingerend');}};
-          c.addEventListener('touchmove',mv,{passive:true});c.addEventListener('touchend',end,{passive:true});
-          c.addEventListener('touchcancel',end,{passive:true});
-        };attach();}
+    // Show model when marker found; show fallback if the model fails to load
+    const marker = document.getElementById('marker');
+    const modelEl = document.getElementById('model');
+    const warnEl  = document.getElementById('warn');
+    marker.addEventListener('markerFound', () => modelEl.setAttribute('visible','true'));
+    modelEl.addEventListener('model-error', () => {
+      document.getElementById('fallback').setAttribute('visible','true');
+      warnEl.style.display = 'block';
+      warnEl.textContent = 'Model failed to load. Check your GLB URL.';
     });
-    AFRAME.registerComponent('gesture-handler',{
-      schema:{minScale:{default:.05},maxScale:{default:8},rotationFactor:{default:1}},
-      init(){this.initial=1;this.baseY=0;const sc=this.el.sceneEl;
-        sc.addEventListener('twofingerstart',()=>{if(!this.el.getAttribute('visible'))return;
-          const s=this.el.object3D.scale;this.initial=s.x;const r=this.el.getAttribute('rotation');this.baseY=r.y||0;});
-        sc.addEventListener('twofingermove',e=>{if(!this.el.getAttribute('visible'))return;
-          let n=this.initial*(e.detail.scaleFactor||1);n=Math.max(this.data.minScale,Math.min(this.data.maxScale,n));
-          this.el.setAttribute('scale',`${n} ${n} ${n}`);
-          const r=this.el.getAttribute('rotation');const y=this.baseY+(e.detail.rotationDeltaDeg||0)*this.data.rotationFactor;
-          this.el.setAttribute('rotation',`${r.x||0} ${y} ${r.z||0}`);});
+
+    // Tap-to-start: proactively request camera permission
+    const gate = document.getElementById('gate');
+    document.getElementById('startBtn').addEventListener('click', async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } }
+        });
+        // Stop preflight stream; AR.js will start its own
+        (stream.getTracks()||[]).forEach(t => t.stop());
+        gate.style.display = 'none';
+        // Nudge the scene layout (sometimes helps AR.js source sizing)
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
+      } catch (e) {
+        warnEl.style.display = 'block';
+        warnEl.textContent = 'Camera permission denied or unavailable. Allow camera in site settings and reload.';
       }
     });
 
-    // Show/hide on marker events
-    const mk=document.getElementById('m_single');
-    mk.addEventListener('markerFound',()=>document.getElementById('model').setAttribute('visible','true'));
-    mk.addEventListener('markerLost', ()=>document.getElementById('model').setAttribute('visible','false'));
+    // If camera never starts, show a gentle warning after a few seconds
+    setTimeout(() => {
+      const video = document.querySelector('video');
+      if (!video || (video.readyState || 0) < 2) warnEl.style.display = 'block';
+    }, 5000);
   </script>
 </body>
 </html>
