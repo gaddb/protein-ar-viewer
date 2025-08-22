@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Single Marker AR (stable)</title>
+
+<!-- Stable combo seen in MoleculARweb’s stack -->
+<script src="https://cdn.jsdelivr.net/npm/aframe@1.2.0/dist/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.2/aframe/build/aframe-ar.min.js"></script>
+
+<!-- Gestures helper they use -->
+<script src="https://raw.githack.com/fcor/arjs-gestures/master/dist/gestures.js"></script>
+
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#0f0;font:14px ui-monospace,Consolas,monospace}
+  #log{position:fixed;left:0;right:0;top:0;max-height:44%;overflow:auto;white-space:pre-wrap;background:rgba(0,0,0,.5);padding:8px;z-index:100}
+  .a-enter-vr-button,.a-enter-ar-button{display:none!important}
+  /* De-squish camera: make AR.js video fill the screen with correct aspect */
+  video, canvas[a-grabbing] { object-fit: cover !important; }
+  #arjs-video { width:100vw !important; height:100vh !important; object-fit: cover !important; }
+  a-scene { position:fixed !important; inset:0; }
+</style>
+
+<body>
+<div id="log"></div>
+
+<a-scene
+  embedded
+  vr-mode-ui="enabled:false"
+  renderer="alpha:true; antialias:true; logarithmicDepthBuffer:true"
+  arjs="sourceType: webcam; facingMode: environment; trackingMethod: best; videoTexture: true; debugUIEnabled:false"
+  gesture-detector
+  id="scene">
+
+  <!-- Load a model via URL param ?glb=... (falls back to Astronaut) -->
+  <a-assets>
+    <a-asset-item id="model" src=""></a-asset-item>
+  </a-assets>
+
+  <!-- Single marker: built-in HIRO -->
+  <a-marker preset="hiro" emitevents="true" id="marker"
+            raycaster="objects: .clickable" cursor="fuse:false; rayOrigin:mouse;">
+    <a-entity id="modelRoot"
+              gltf-model="#model"
+              scale="0.3 0.3 0.3"
+              position="0 0 0"
+              rotation="0 0 0"
+              class="clickable"
+              gesture-handler="minScale:0.05; maxScale:10; rotationFactor:5">
+    </a-entity>
+  </a-marker>
+
+  <a-entity camera></a-entity>
+</a-scene>
+
+<script>
+  const log = (...a)=>{document.getElementById('log').textContent += a.join(' ') + '\n';};
+  log('A-Frame', AFRAME.version);
+
+  // choose model from ?glb=... or default to Astronaut
+  const params = new URLSearchParams(location.search);
+  const glb = params.get('glb') || 'https://modelviewer.dev/shared-assets/models/Astronaut.glb';
+  document.getElementById('model').setAttribute('src', glb);
+
+  const scene = document.getElementById('scene');
+  scene.addEventListener('camera-init',  e=>log('camera-init', JSON.stringify(e.detail||{})));
+  scene.addEventListener('camera-error', e=>log('camera-error', e && e.detail ? e.detail : 'unknown'));
+
+  document.getElementById('marker').addEventListener('markerFound', ()=>log('markerFound'));
+  document.getElementById('marker').addEventListener('markerLost',  ()=>log('markerLost'));
+
+  // Optional: enforce a 16:9 request if your Android produces 4:3 squish.
+  // Uncomment the line below to try a 1280x720 request.
+  // scene.setAttribute('arjs', scene.getAttribute('arjs') + '; sourceWidth:1280; sourceHeight:720; displayWidth:1280; displayHeight:720');
+</script>
+</body>
+</html>
