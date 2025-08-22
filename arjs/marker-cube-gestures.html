@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>AR.js Single + Cube — Protein</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.min.js"></script>
+  <style>
+    html,body{margin:0;height:100%;overflow:hidden;background:#000}
+    .hud{position:fixed;left:0;right:0;bottom:0;padding:8px 12px;
+         color:#fff;font:14px/1.4 system-ui,Arial;background:rgba(0,0,0,.35)}
+    .hud b{color:#7ff}
+  </style>
+</head>
+<body>
+  <a-scene embedded renderer="logarithmicDepthBuffer:true;antialias:true"
+           arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false"
+           gesture-detector>
+    <a-assets>
+      <a-asset-item id="mdl"></a-asset-item>
+    </a-assets>
+
+    <!-- SINGLE CUSTOM MARKER -->
+    <a-marker type="pattern" url="markers/single.patt" emitevents="true" id="m_single">
+      <a-entity id="model_single" gltf-model="#mdl" scale="0.25 0.25 0.25" rotation="0 0 0"
+                gesture-handler="minScale:0.05; maxScale:8; rotationFactor:1.0"
+                visible="false"></a-entity>
+    </a-marker>
+
+    <!-- CUBE: six faces; each anchors its own instance -->
+    <a-marker type="pattern" url="markers/face1.patt" emitevents="true" id="m_f1">
+      <a-entity id="model_f1" gltf-model="#mdl" scale="0.25 0.25 0.25" visible="false"
+                gesture-handler="minScale:0.05; maxScale:8; rotationFactor:1.0"></a-entity>
+    </a-marker>
+    <a-marker type="pattern" url="markers/face2.patt" emitevents="true" id="m_f2">
+      <a-entity id="model_f2" gltf-model="#mdl" scale="0.25 0.25 0.25" visible="false"
+                gesture-handler="minScale:0.05; maxScale:8; rotationFactor:1.0"></a-entity>
+    </a-marker>
+    <a-marker type="pattern" url="markers/face3.patt" emitevents="true" id="m_f3">
+      <a-entity id="model_f3" gltf-model="#mdl" scale="0.25 0.25 0.25" visible="false"
+                gesture-handler="minScale:0.05; maxScale:8; rotationFactor:1.0"></a-entity>
+    </a-marker>
+    <a-marker type="pattern" url="markers/face4.patt" emitevents="true" id="m_f4">
+      <a-entity id="model_f4" gltf-model="#mdl" scale="0.25 0.25 0.25" visible="false"
+                gesture-handler="minScale:0.05; maxScale:8; rotationFactor:1.0"></a-entity>
+    </a-marker>
+    <a-marker type="pattern" url="markers/face5.patt" emitevents="true" id="m_f5">
+      <a-entity id="model_f5" gltf-model="#mdl" scale="0.25 0.25 0.25" visible="false"
+                gesture-handler="minScale:0.05; maxScale:8; rotationFactor:1.0"></a-entity>
+    </a-marker>
+    <a-marker type="pattern" url="markers/face6.patt" emitevents="true" id="m_f6">
+      <a-entity id="model_f6" gltf-model="#mdl" scale="0.25 0.25 0.25" visible="false"
+                gesture-handler="minScale:0.05; maxScale:8; rotationFactor:1.0"></a-entity>
+    </a-marker>
+
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <div class="hud">
+    <b>Tips:</b> Good lighting, matte prints. Pinch to scale; twist to rotate. Only one copy shows at a time.
+  </div>
+
+  <script>
+    // Load model from ?glb=...
+    const p = new URLSearchParams(location.search);
+    const glb = p.get('glb') || '../models/4INS.glb';
+    document.getElementById('mdl').setAttribute('src', glb);
+
+    // Inline gestures (same as single.html)
+    AFRAME.registerComponent('gesture-detector',{init(){const el=this.el;const s={active:false,dist:0,ang:0};
+      const attach=()=>{const c=el.renderer&&el.renderer.domElement;if(!c)return setTimeout(attach,50);
+        c.addEventListener('touchstart',e=>{if(e.touches.length===2){const[a,b]=e.touches;
+          s.dist=Math.hypot(b.clientX-a.clientX,b.clientY-a.clientY);
+          s.ang=Math.atan2(b.clientY-a.clientY,b.clientX-a.clientX);s.active=true;el.emit('twofingerstart');}});
+        const mv=e=>{if(!s.active||e.touches.length!==2)return;const[a,b]=e.touches;
+          const d=Math.hypot(b.clientX-a.clientX,b.clientY-a.clientY);
+          const ang=Math.atan2(b.clientY-a.clientY,b.clientX-a.clientX);
+          const f=s.dist?d/s.dist:1;let rd=ang-s.ang;rd=Math.atan2(Math.sin(rd),Math.cos(rd));
+          el.emit('twofingermove',{scaleFactor:f,rotationDeltaDeg:rd*180/Math.PI});};
+        const end=()=>{if(s.active){s.active=false;el.emit('twofingerend');}};
+        c.addEventListener('touchmove',mv,{passive:true});c.addEventListener('touchend',end,{passive:true});
+        c.addEventListener('touchcancel',end,{passive:true});};attach();}});
+    AFRAME.registerComponent('gesture-handler',{schema:{minScale:{default:.05},maxScale:{default:8},rotationFactor:{default:1}},
+      init(){this.initial=1;this.baseY=0;const sc=this.el.sceneEl;
+        sc.addEventListener('twofingerstart',()=>{if(!this.el.getAttribute('visible'))return;
+          const s=this.el.object3D.scale;this.initial=s.x;const r=this.el.getAttribute('rotation');this.baseY=r.y||0;});
+        sc.addEventListener('twofingermove',e=>{if(!this.el.getAttribute('visible'))return;
+          let n=this.initial*(e.detail.scaleFactor||1);n=Math.max(this.data.minScale,Math.min(this.data.maxScale,n));
+          this.el.setAttribute('scale',`${n} ${n} ${n}`);
+          const r=this.el.getAttribute('rotation');const y=this.baseY+(e.detail.rotationDeltaDeg||0)*this.data.rotationFactor;
+          this.el.setAttribute('rotation',`${r.x||0} ${y} ${r.z||0}`);});
+    }});
+
+    // Show only one instance at a time (the marker you’re looking at)
+    const markers=[...document.querySelectorAll('a-marker')];
+    const models =[...document.querySelectorAll('[gltf-model]')];
+    let sharedScale=0.25;
+    function hideAll(){models.forEach(e=>e.setAttribute('visible','false'));}
+
+    models.forEach(m=>{
+      m.addEventListener('componentchanged',e=>{
+        if(e.detail&&e.detail.name==='scale'){
+          const s=m.getAttribute('scale'); sharedScale=s.x||sharedScale;
+          models.forEach(x=>x.setAttribute('scale',`${sharedScale} ${sharedScale} ${sharedScale}`));
+        }
+      },true);
+    });
+
+    markers.forEach(marker=>{
+      marker.addEventListener('markerFound',()=>{
+        hideAll();
+        marker.querySelectorAll('[gltf-model]').forEach(e=>{
+          e.setAttribute('scale',`${sharedScale} ${sharedScale} ${sharedScale}`);
+          e.setAttribute('visible','true');
+        });
+      });
+      marker.addEventListener('markerLost',()=>{
+        marker.querySelectorAll('[gltf-model]').forEach(e=>e.setAttribute('visible','false'));
+      });
+    });
+  </script>
+</body>
+</html>
