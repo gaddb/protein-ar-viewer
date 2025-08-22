@@ -2,41 +2,66 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>AR.js Camera Test</title>
+<title>AR.js Camera Test (logged)</title>
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.min.js"></script>
 <style>
-  html,body{margin:0;height:100%;overflow:hidden;background:#000}
+  html,body{margin:0;height:100%;overflow:hidden;background:#000;color:#0f0;font:14px/1.4 ui-monospace,Consolas,monospace}
+  #log{position:fixed;left:0;right:0;top:0;max-height:44%;overflow:auto;white-space:pre-wrap;
+       background:rgba(0,0,0,.6);padding:8px;z-index:100}
   .gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;z-index:99}
   .gate button{font:600 16px system-ui,Arial;padding:14px 18px;border-radius:10px;border:0;background:#0a84ff;color:#fff}
-  .warn{position:fixed;top:8px;left:8px;right:8px;color:#fff;background:#c33;padding:8px;display:none;z-index:100}
+  a-scene{position:fixed;inset:0}
 </style>
 <body>
-  <div id="warn" class="warn"></div>
-  <div class="gate" id="gate"><button id="startBtn">Tap to enable camera</button></div>
+<div id="log"></div>
+<div class="gate"><button id="startBtn">Tap to enable camera</button></div>
+<script>
+  const log = (...a)=>{document.getElementById('log').textContent += a.join(' ') + '\n';};
+  log('secureContext:', location.protocol === 'https:');
+  log('getUserMedia available:', !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
 
-  <script>
-    const warn = document.getElementById('warn');
-    document.getElementById('startBtn').addEventListener('click', async () => {
-      try {
-        // Ask permission first
-        const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
-        (s.getTracks()||[]).forEach(t=>t.stop());
-        document.getElementById('gate').style.display = 'none';
+  document.getElementById('startBtn').addEventListener('click', () => start('environment'));
 
-        // Build scene AFTER permission (note: correct AR.js syntax with facingMode)
-        document.body.insertAdjacentHTML('beforeend', `
-          <a-scene embedded
-                   arjs="trackingMethod: best; sourceType: webcam; facingMode: environment; debugUIEnabled: false"
-                   loading-screen="enabled:false" id="scene">
-            <a-entity camera></a-entity>
-          </a-scene>
-        `);
-      } catch (e) {
-        warn.textContent = 'Camera permission denied or unavailable. Allow camera in site settings and reload.';
-        warn.style.display = 'block';
+  async function start(facing){
+    try{
+      log('Requesting permission (preflight), facing=', facing);
+      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facing } } });
+      (s.getTracks()||[]).forEach(t=>t.stop()); // close preflight stream
+      document.querySelector('.gate').style.display='none';
+      await new Promise(r=>setTimeout(r,250)); // small settle delay
+
+      buildScene(facing);
+    }catch(e){
+      log('Preflight error:', e.name, e.message);
+      if (facing==='environment'){ // try front cam
+        log('Retrying with facing="user"…');
+        start('user');
       }
-    });
-  </script>
+    }
+  }
+
+  function buildScene(facing){
+    log('Building <a-scene> with facingMode=', facing);
+    document.body.insertAdjacentHTML('beforeend', `
+      <a-scene embedded
+               arjs="trackingMethod: best; sourceType: webcam; facingMode: ${facing}; debugUIEnabled: false"
+               loading-screen="enabled:false" id="scene">
+        <a-entity camera></a-entity>
+      </a-scene>
+    `);
+    const scene = document.getElementById('scene');
+    scene.addEventListener('camera-init', e=>log('camera-init:', JSON.stringify(e.detail||{})));
+    scene.addEventListener('camera-error', e=>log('camera-error:', e && e.detail ? e.detail : 'unknown'));
+    // If still no video, tell us after a moment
+    setTimeout(()=>{
+      const v = document.querySelector('video');
+      log('video present:', !!v, ' readyState:', v && v.readyState);
+      if (!v || (v.readyState||0) < 2){
+        log('No video feed detected — check site/app camera permissions and try again.');
+      }
+    }, 2000);
+  }
+</script>
 </body>
 </html>
