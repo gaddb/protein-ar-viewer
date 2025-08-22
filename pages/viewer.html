@@ -4,23 +4,39 @@
   <meta charset="utf-8" />
   <title>Protein AR Viewer</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- model-viewer -->
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
   <style>
-    html,body { height:100%; margin:0; background:#fff; color:#000; font-family:Arial, sans-serif; }
+    :root { --header-h: 48px; }
+    html, body { height: 100%; margin: 0; background: #fff; color: #000; font-family: Arial, sans-serif; }
+    body { padding-top: var(--header-h); }
     header {
-      position:fixed; top:0; left:0; right:0; padding:10px 14px;
-      background:rgba(255,255,255,.9); z-index:2; display:flex; align-items:center; gap:12px;
-      border-bottom:1px solid #e5e5e5;
+      position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+      display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+      background: rgba(255,255,255,.95); border-bottom: 1px solid #e5e5e5; z-index: 3;
     }
-    header h1 { font-size:16px; margin:0; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    header a { color:#0a66c2; text-decoration:none; }
-    model-viewer { width:100%; height:100%; background-color:#fff; }
-    .note { position:fixed; bottom:8px; left:8px; right:8px; z-index:2; font-size:12px; opacity:.85; color:#333; }
-    .ar-btn, .marker-btn {
-      position:fixed; bottom:14px; z-index:3; border:0; padding:10px 14px; border-radius:8px; font-weight:600;
+    header h1 { font-size: 16px; margin: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    header a { color: #0a66c2; text-decoration: none; }
+
+    model-viewer {
+      width: 100%;
+      height: calc(100vh - var(--header-h));
+      background-color: #fff;
+      touch-action: none; /* smoother touch interactions */
     }
-    .ar-btn { right:14px; background:#0a84ff; color:#fff; }
-    .marker-btn { left:14px; background:#111; color:#fff; }
+
+    /* Buttons / notes that overlay the canvas */
+    .ar-btn {
+      position: absolute; right: 14px; bottom: 14px; z-index: 4;
+      border: 0; padding: 10px 14px; border-radius: 8px; font-weight: 600;
+      background: #0a84ff; color: #fff;
+    }
+    .note {
+      position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 2;
+      font-size: 12px; opacity: .85; color: #333; text-align: left;
+    }
   </style>
 </head>
 <body>
@@ -32,37 +48,39 @@
   <model-viewer id="mv"
     src=""
     ios-src=""
+    alt="3D molecular model"
+    loading="eager"
+    reveal="auto"
+
     camera-controls
     auto-rotate
-
-    ar
-    ar-modes="webxr scene-viewer quick-look"
-    quick-look-browsers="safari chrome"
-    ar-placement="floor"
-    ar-scale="auto"
-
     bounds="tight"
+    environment-image="neutral"
+
+    <!-- Nice wide range so you can zoom in close -->
     camera-orbit="0deg 65deg 130%"
     max-camera-orbit="auto auto 2500%"
     min-field-of-view="15deg"
     max-field-of-view="90deg"
 
     exposure="1"
-    shadow-intensity="0.2">
+    shadow-intensity="0.25"
+
+    <!-- AR -->
+    ar
+    ar-modes="webxr scene-viewer quick-look"
+    ar-placement="floor"
+    ar-scale="fixed">
     <button slot="ar-button" class="ar-btn">View in AR</button>
+    <div id="note" class="note"></div>
   </model-viewer>
-
-  <!-- Opens your AR.js page with the same GLB -->
-  <a id="markerLink" class="marker-btn" href="#" target="_blank" rel="noopener">Marker AR</a>
-
-  <div id="note" class="note"></div>
 
   <script>
     // Parse query params: ?title=...&glb=...&usdz=...
     const p = new URLSearchParams(location.search);
     const title = p.get('title') || '';
-    const glb = p.get('glb');           // required for both model-viewer & AR.js
-    const usdz = p.get('usdz') || '';   // optional (needed for iOS Quick Look)
+    const glb   = p.get('glb');          // e.g., ../models/4INS_plain.glb
+    const usdz  = p.get('usdz') || '';   // e.g., ../models/4INS_plain.usdz
 
     if (title) document.getElementById('title').textContent = title;
 
@@ -72,24 +90,16 @@
     if (!glb) {
       noteEl.textContent = 'Missing ?glb= path in URL.';
     } else {
-      mv.src = glb;                       // e.g., ../models/4INS.glb
-      if (usdz) mv.setAttribute('ios-src', usdz); // e.g., ../models/4INS.usdz
+      mv.src = glb;
+      if (usdz) mv.setAttribute('ios-src', usdz);
     }
 
-    // Build the Marker AR link to your AR.js page
-    // Choose which page you want to open:
-    const markerPage = '../arjs/marker-cube-gestures.html'; // or '../arjs/single.html'
-    const markerURL = `${markerPage}?glb=${encodeURIComponent(glb || '')}&title=${encodeURIComponent(title)}`;
-    const markerLink = document.getElementById('markerLink');
-    markerLink.href = markerURL;
-    if (!glb) { markerLink.style.display = 'none'; }
-
-    // Friendly hint for iOS if USDZ is missing
+    // Helpful hint for iOS if USDZ is missing
     const isIOS =
       /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     if (isIOS && !usdz) {
-      noteEl.textContent = 'iOS AR (Quick Look) needs a USDZ. Add &usdz=../models/YourModel.usdz to enable “View in AR”.';
+      noteEl.textContent = 'Tip: iOS Quick Look needs a USDZ. Add &usdz=../models/YourModel.usdz to enable “View in AR”.';
     }
   </script>
 </body>
